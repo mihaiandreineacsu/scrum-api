@@ -1,1 +1,75 @@
 # scrum-api
+
+## Django project structure
+- Django Projects are split into various apps.
+    1. app/ - Django project
+    2. app/core/ - Code shared between multiple apps (database definition using Django models)
+    3. app/user/ - User related code (user registration & authentication tokens)
+    4. app/task/ - Task related coe (handling, updating and managing tasks, contacts)
+
+## Creating Github project
+1. Create Github Account
+2. Create Docker Account
+3. Create Repository (public, .gitignore for Python, Readme.md)
+4. Clone Repository Locally
+5. Set the project up with the credentials needed to authenticate with Docker Hub:
+   1. Docker -> Username -> Settings -> Create new Access Token -> Give a description to Token (!Do not close the Window)
+   2. Github -> Settings -> Secrets -> New repository secret -> Name -> DOCKERHUB_USER -> Value <dockerhub-username> -> Add Secret
+   3. New repository secret -> Name -> DOCKERHUB_TOKEN -> Value -> <dockerhub-access-token> (You can close the Window on point 6) -> Add Secret
+- To revoke access to the project, delete Dockerhub Access Token from Docker.
+
+---
+
+## Get Started
+
+---
+
+Build Docker image
+
+- With Docker
+```cmd
+docker build .
+```
+- With docker-compose
+```cmd
+docker-compose build
+```
+---
+
+## Linting and Testing
+
+1. Linting
+- Run it through Docker Compose
+- Fix linting errors from the bottom-up
+    ```cmd
+    docker-compose run --rm app sh -c "flake8"
+    ```
+2. Testing
+- Run test through Docker Compose
+  ```cmd
+  docker-compose run --rm app sh -c "python manage.py test"
+  ```
+
+---
+
+## Create Django Project
+
+Create a django project named app in the current directory
+```cmd
+docker-compose run --rm app sh -c "django-admin startproject app ."
+```
+Because Django is install in Docker Image, run the CLI command just as were on our local machine.
+- Sync was made by the volumes we defined in Docker compose.
+- Because of that, everything that we create in our local machine, gets mapped to Docker image and vice versa.
+
+---
+
+## Run project with Docker Compose
+- Command to start docker services
+    ```cmd
+    docker-compose up
+    ```
+- Open browser at : [127.0.0.1:8000](127.0.0.1:8000)
+- Stop the development server with ctrl + c
+
+---
