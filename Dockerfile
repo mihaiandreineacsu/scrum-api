@@ -3,18 +3,24 @@ LABEL maintainer="mihai@developerakademie.com"
 # Unbuffer Python (does not buffer the output, the output from python will be printed directly to the console)
 ENV PYTHONUNBUFFERED 1
 COPY ./requirements.txt /tmp/requirements.txt
+COPY ./requirements-dev.txt /tmp/requirements-dev.txt
 COPY ./app /app
 # this is the default directory commands are going to be run from when running commands on Docker Image
 WORKDIR /app
 # exposing Port from our container to our machine on container run,
 # allowing to access that port on the container that's running from Docker image.
 EXPOSE 8000
+# Configure dockerfile if dev build to install Dev Requirements
+ARG DEV=false
 # for each RUN in Dockerfile a image layer is created,
 #  avoid this to keep images lightweight as possible by breaking the commands in multiple line
 #  by using "&& \" syntax
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     /py/bin/pip install -r /tmp/requirements.txt && \
+    if [ $DEV = "true" ]; \
+        then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
+    fi && \
     rm -rf /tmp && \
     adduser \
         --disabled-password \
