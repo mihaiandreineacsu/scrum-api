@@ -1,7 +1,8 @@
 [flake8]
 # Configure flake9 to exclude directories and files that we do not need to lint
+ignore = E501
 exlcude =
     migrations,
     __pycache__,
     manage.py,
-    setting.py
+    settings.py
