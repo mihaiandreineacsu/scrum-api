@@ -1,0 +1,14 @@
+#  Docker Compose Files consist of services needed by application.
+# Docker Compose version syntax used
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: . # This means build our docker file in current directory
+    ports:
+      - "8000:8000" # maps port 8000 from local machine to port 8000 inside Docker container
+    volumes:
+      - ./app:/app # maps app directory from local machine to /app  inside Docker container
+    command: > #command that is used to run the service
+      sh -c "python manage.py runserver 0.0.0.0:8000"
