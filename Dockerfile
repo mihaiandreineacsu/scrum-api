@@ -1,4 +1,8 @@
 FROM python:3.9-alpine3.13
+# What is defined in the Dockerfile ?
+# Operation system level dependencies.
+# The Dockerfile is used to build our image,
+# which contains a mini Linux Operating System with all the dependencies needed to run our project.
 LABEL maintainer="mihai@developerakademie.com"
 # Unbuffer Python (does not buffer the output, the output from python will be printed directly to the console)
 ENV PYTHONUNBUFFERED 1

@@ -49,6 +49,21 @@ docker-compose build
   ```cmd
   docker-compose run --rm app sh -c "python manage.py test"
   ```
+- Where do you put test?
+    - Placeholder tests.py added to each app
+    - Or, create tests/ subdirectory to split tests up
+    - Keep in mind:
+        - Only use ```tests.py``` or ```tests/``` directory (not both)
+        - Test modules must start with ```test_```
+        - Test directories must contain ```__init__.py```
+-  Test classes
+    - ```SimpleTestCase```
+        - No database integration
+        - Useful if no database is required for your test
+        - Save time executing tests
+    - ```TestCase```
+        - Database integration
+        - Useful for testing code that uses the database
 
 ---
 
