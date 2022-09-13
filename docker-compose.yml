@@ -6,6 +6,8 @@ services:
   app:
     build:
       context: . # This means build our docker file in current directory
+      args:
+        - DEV=true # Configure docker-compose on build to install Dev Requirements
     ports:
       - "8000:8000" # maps port 8000 from local machine to port 8000 inside Docker container
     volumes:
