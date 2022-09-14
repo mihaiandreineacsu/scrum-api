@@ -44,6 +44,8 @@ docker-compose build
     ```cmd
     docker-compose run --rm app sh -c "flake8"
     ```
+- Temporarily Suppress Linting for unused imports
+    - add after unused import ```## noqa``` (tells flake8 to ignore line error)
 2. Testing
 - Run test through Docker Compose
   ```cmd
