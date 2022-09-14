@@ -88,3 +88,12 @@ Because Django is install in Docker Image, run the CLI command just as were on o
 - Stop the development server with ctrl + c
 
 ---
+
+## Create Django app
+
+Create a django app named app
+```cmd
+docker-compose run --rm app sh -c "python manage.py startapp core"
+```
+
+---
