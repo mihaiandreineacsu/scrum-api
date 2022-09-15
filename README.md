@@ -135,3 +135,9 @@ docker-compose run --rm app sh -c "python manage.py startapp core"
     - Remove Volume again
 
 ---
+
+## Create Superuser
+- Create ```superuser``` credentials using CLI
+```cmd
+docker-compose run --rm app sh -c "python manage.py createsuperuser"
+```
