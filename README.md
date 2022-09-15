@@ -99,3 +99,20 @@ docker-compose run --rm app sh -c "python manage.py startapp core"
 ```
 
 ---
+
+## Database migrations
+
+- Creating migrations
+    - Ensure app is enabled in settings.py
+    - Use Django CLI command:
+    ```cmd
+    python manage.py makemigrations
+    ```
+- Applying migrations
+    - Use Django CLI command:
+    ```cmd
+    python manage.py migration
+    ```
+- Run it after waiting for database (best practice)
+
+---
