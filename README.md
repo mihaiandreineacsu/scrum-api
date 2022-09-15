@@ -113,6 +113,25 @@ docker-compose run --rm app sh -c "python manage.py startapp core"
     ```cmd
     python manage.py migration
     ```
-- Run it after waiting for database (best practice)
+- Run it after waiting for database and after any new Model (best practice)
+
+
+- Common issues
+  - ```jango.db.migrations.exceptions.InconsistentMigrationHistory: Migration admin.0001_initial is applied before its dependency core.0001_initial on database 'default'.```
+    - clear the volume (refreshes our database, clear all data in our development database)
+      - List all Volumes
+        ```cmd
+        docker volume ls
+        ```
+      - Remove volume
+      ```cmd
+      docker volume rm <volume-name>
+      ```
+  - ```Error response from daemon: remove recipe-app-api_dev-db-data: volume is in use - [volume-hash]```
+    - Clear any containers using the volume
+    ```cmd
+    docker-compose down
+    ```
+    - Remove Volume again
 
 ---
