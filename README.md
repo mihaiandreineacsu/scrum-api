@@ -119,20 +119,11 @@ docker-compose run --rm app sh -c "python manage.py startapp core"
 - Common issues
   - ```jango.db.migrations.exceptions.InconsistentMigrationHistory: Migration admin.0001_initial is applied before its dependency core.0001_initial on database 'default'.```
     - clear the volume (refreshes our database, clear all data in our development database)
-      - List all Volumes
-        ```cmd
-        docker volume ls
-        ```
-      - Remove volume
-      ```cmd
-      docker volume rm <volume-name>
-      ```
+      - List all Volumes: ```docker volume ls```
+      - Remove volume: ```docker volume rm <volume-name>```
   - ```Error response from daemon: remove recipe-app-api_dev-db-data: volume is in use - [volume-hash]```
-    - Clear any containers using the volume
-    ```cmd
-    docker-compose down
-    ```
-    - Remove Volume again
+    - Clear any containers using the volume: ```docker-compose down```
+    - Remove Volume again: ```docker volume rm <volume-name>```
 
 ---
 
@@ -141,3 +132,11 @@ docker-compose run --rm app sh -c "python manage.py startapp core"
 ```cmd
 docker-compose run --rm app sh -c "python manage.py createsuperuser"
 ```
+
+---
+
+## Swager UI
+ - Start server : ```docker-compose up```
+ - Navigate to [127.0.0.1:8000/api/docs](http://127.0.0.1:8000/api/docs)
+
+---
