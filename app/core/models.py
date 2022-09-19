@@ -1,13 +1,15 @@
 """
 Database models.
 """
+from typing import Literal
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
-
+from django.contrib.postgres.fields import ArrayField
 
 class UserManager(BaseUserManager):
     """Manager for users."""
@@ -42,3 +44,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+class Task(models.Model):
+    """Task object."""
+
+    PRIORITY_CHOICES = [('Urgent','Urgent'), ('Medium','Medium'), ('Low','Low')]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    sub_tasks = ArrayField(models.TextField(blank=True))
+    priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='Low')
+
+    def __str__(self):
+        return self.title
