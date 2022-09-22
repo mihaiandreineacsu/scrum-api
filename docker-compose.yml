@@ -12,6 +12,7 @@ services:
       - "8000:8000" # maps port 8000 from local machine to port 8000 inside Docker container
     volumes:
       - ./app:/app # maps app directory from local machine to /app  inside Docker container
+      - dev-static-data:/vol/web
     command: > #command that is used to run the service
           sh -c "python manage.py wait_for_db &&
                  python manage.py migrate &&
@@ -35,3 +36,4 @@ services:
 
 volumes:
   dev-db-data:
+  dev-static-data:
