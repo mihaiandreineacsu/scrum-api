@@ -39,6 +39,11 @@ def detail_url(task_id):
     return reverse('task:task-detail', args=[task_id])
 
 
+def create_user(**params):
+    """Create and return a new user."""
+    return get_user_model().objects.create_user(**params)
+
+
 class PublicTaskAPITests(TestCase):
     """Test unauthenticated API requests."""
 
@@ -117,3 +122,80 @@ class PrivateTaskAPITests(TestCase):
         for k, v in payload.items():
             self.assertEqual(getattr(task, k), v)
         self.assertEqual(task.user, self.user)
+
+    def test_partial_update(self):
+        """Test partial update if a task."""
+        original_link = 'https://example.com/task.pdf'
+        task = create_task(
+            user=self.user,
+            title='Simple',
+            link=original_link,
+        )
+
+        payload = {'title': 'New task title'}
+        url = detail_url(task.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        task.refresh_from_db()
+        self.assertEqual(task.title, payload['title'])
+        self.assertEqual(task.link, original_link)
+        self.assertEqual(task.user, self.user)
+
+    def test_full_update(self):
+        """Test full update of task."""
+        task = create_task(
+            user=self.user,
+            title='Sample task title',
+            link='https://example.com/task.pdf',
+            description='Simple task description',
+        )
+
+        payload = {
+            'title': 'Sample task title',
+            'description': 'Sample description',
+            'sub_tasks': ['Some subtask'],
+            'description': 'Sample description',
+            'priority': 'Low',
+        }
+        url = detail_url(task.id)
+        res = self.client.put(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        task.refresh_from_db()
+        for k, v in payload.items():
+            self.assertEqual(getattr(task, k), v)
+        self.assertEqual(task.user, self.user)
+
+    def test_update_user_returns_error(self):
+        """test changing the the task user results in an error."""
+        new_user = create_user(email='user2@example.com', password='test123')
+        task = create_task(user=self.user)
+
+        payload = {'user': new_user.id}
+        url = detail_url(task.id)
+        self.client.patch(url, payload)
+
+        task.refresh_from_db()
+        self.assertEqual(task.user, self.user)
+
+    def test_deleting_task(self):
+        """Test deleting a task successful."""
+        task = create_task(user=self.user)
+
+        url = detail_url(task.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Task.objects.filter(id=task.id).exists())
+
+    def test_task_other_users_task_error(self):
+        """Test trying to delete another users task gives error."""
+        new_user = create_user(email='user2@example.com', password='test123')
+        task = create_task(user=new_user)
+
+        url = detail_url(task.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(Task.objects.filter(id=task.id).exists())

@@ -59,6 +59,7 @@ class Task(models.Model):
     description = models.TextField(blank=True)
     sub_tasks = ArrayField(models.TextField(blank=True))
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='Low')
+    link = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.title
