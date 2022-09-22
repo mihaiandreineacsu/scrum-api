@@ -10,7 +10,10 @@ from rest_framework.test import APIClient
 
 from core.models import Task
 
-from task.serializers import TaskSerializer
+from task.serializers import (
+    TaskSerializer,
+    TaskDetailSerializer
+)
 
 
 TASKS_URL = reverse('task:task-list')
@@ -29,6 +32,11 @@ def create_task(user, **params):
 
     task = Task.objects.create(user=user, **defaults)
     return task
+
+
+def detail_url(task_id):
+    """Create and return a task detail URL."""
+    return reverse('task:task-detail', args=[task_id])
 
 
 class PublicTaskAPITests(TestCase):
@@ -81,4 +89,14 @@ class PrivateTaskAPITests(TestCase):
         tasks = Task.objects.filter(user=self.user)
         serializer = TaskSerializer(tasks, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_get_task_detail(self):
+        """Test get task detail."""
+        task = create_task(user=self.user)
+
+        url = detail_url(task.id)
+        res = self.client.get(url)
+
+        serializer = TaskDetailSerializer(task)
         self.assertEqual(res.data, serializer.data)

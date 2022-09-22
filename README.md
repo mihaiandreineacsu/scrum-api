@@ -121,7 +121,7 @@ docker-compose run --rm app sh -c "python manage.py startapp core"
     - clear the volume (refreshes our database, clear all data in our development database)
       - List all Volumes: ```docker volume ls```
       - Remove volume: ```docker volume rm <volume-name>```
-  - ```Error response from daemon: remove recipe-app-api_dev-db-data: volume is in use - [volume-hash]```
+  - ```Error response from daemon: remove task-app-api_dev-db-data: volume is in use - [volume-hash]```
     - Clear any containers using the volume: ```docker-compose down```
     - Remove Volume again: ```docker volume rm <volume-name>```
 
