@@ -26,3 +26,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             return serializers.TaskSerializer
 
         return self.serializer_class
+
+    def perform_create(self, serializer):
+        """Create a new task."""
+        serializer.save(user=self.request.user)

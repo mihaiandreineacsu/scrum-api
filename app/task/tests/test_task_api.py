@@ -100,3 +100,20 @@ class PrivateTaskAPITests(TestCase):
 
         serializer = TaskDetailSerializer(task)
         self.assertEqual(res.data, serializer.data)
+
+    def test_create_task(self):
+        """Test creating a task."""
+        payload = {
+            'title': 'Sample task title',
+            'description': 'Sample description',
+            'sub_tasks': ['Some subtask'],
+            'description': 'Sample description',
+            'priority': 'Low',
+        }
+        res = self.client.post(TASKS_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        task = Task.objects.get(id=res.data['id'])
+        for k, v in payload.items():
+            self.assertEqual(getattr(task, k), v)
+        self.assertEqual(task.user, self.user)
