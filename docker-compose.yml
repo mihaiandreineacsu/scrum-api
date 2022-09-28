@@ -10,6 +10,7 @@ services:
         - DEV=true # Configure docker-compose on build to install Dev Requirements
     ports:
       - "8000:8000" # maps port 8000 from local machine to port 8000 inside Docker container
+      - 3000:3000
     volumes:
       - ./app:/app # maps app directory from local machine to /app  inside Docker container
       - dev-static-data:/vol/web
