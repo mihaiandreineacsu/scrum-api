@@ -8,6 +8,31 @@ from django.contrib.auth import get_user_model
 from core import models
 
 
+def create_user(email='user@example.com', password='testpass123'):
+    """Create and return a new user"""
+    return get_user_model().objects.create_user(email, password)
+
+
+def create_superuser(email='user@example.com', password='testpass123'):
+    """Create and return a new user"""
+    return get_user_model().objects.create_superuser(email, password)
+
+
+def create_task(user,
+    title='Sample task title.',
+    description='Sample task description.',
+    sub_tasks=['Do something extra'],
+    priority='Low'):
+    """Create and return a new Task"""
+    return models.Task.objects.create(
+            user,
+            title,
+            description,
+            sub_tasks,
+            priority,
+        )
+
+
 class ModelTests(TestCase):
     """Test models."""
 
@@ -15,7 +40,7 @@ class ModelTests(TestCase):
         """Test creating a user with an email is successful."""
         email = 'test@example.com'
         password = 'testpass123'
-        user = get_user_model().objects.create_user(
+        user = create_user(
             email=email,
             password=password,
         )
@@ -32,37 +57,25 @@ class ModelTests(TestCase):
             ['test4@example.COM', 'test4@example.com'],
         ]
         for email, expected in sample_emails:
-            user = get_user_model().objects.create_user(email, 'sample123')
+            user = create_user(email)
             self.assertEqual(user.email, expected)
 
     def test_new_user_without_email_raises_error(self):
         """Test that creating a user without an email raises a ValueError."""
         with self.assertRaises(ValueError):
-            get_user_model().objects.create_user('', 'test123')
+            create_user(email='')
 
     def test_create_superuser(self):
         """Test creating a superuser."""
-        user = get_user_model().objects.create_superuser(
-            'test@example.com',
-            'test123',
-        )
+        user = create_superuser()
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
 
     def test_create_task(self):
         """Test creating a task is successful."""
-        user = get_user_model().objects.create_user(
-            'test@example.com',
-            'testpass123',
-        )
-        task = models.Task.objects.create(
-            user=user,
-            title='Sample task title.',
-            description='Sample task description.',
-            sub_tasks=['Do something extra'],
-            priority='Low',
-        )
+        user = create_user()
+        task = create_task(user)
 
         self.assertEqual(str(task), task.title)
 
@@ -74,3 +87,10 @@ class ModelTests(TestCase):
         file_path = models.user_image_file_path(None, 'example.jpg')
 
         self.assertEqual(file_path, f'uploads/user/{uuid}.jpg')
+
+    def test_create_sub_task(self):
+        """Test creating a sub task is successful."""
+        user = create_user()
+        sub_task = models.SubTask.objects.create(user=user, context_text='Some Subtask')
+
+        self.assertEqual(str(sub_task), sub_task.name)
