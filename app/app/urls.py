@@ -33,6 +33,7 @@ urlpatterns = [
     ),
     path('api/user/', include('user.urls')),
     path('api/task/', include('task.urls')),
+    path('api/subtask/', include('subtask.urls')),
 ]
 
 if settings.DEBUG:

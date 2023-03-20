@@ -24,7 +24,6 @@ def create_task(user, **params):
     defaults = {
         'title': 'Sample task title',
         'description': 'Sample description',
-        'sub_tasks': ['Some subtask'],
         'description': 'Sample description',
         'priority': 'Low',
     }
@@ -111,8 +110,6 @@ class PrivateTaskAPITests(TestCase):
         payload = {
             'title': 'Sample task title',
             'description': 'Sample description',
-            'sub_tasks': ['Some subtask'],
-            'description': 'Sample description',
             'priority': 'Low',
         }
         res = self.client.post(TASKS_URL, payload)
@@ -125,11 +122,9 @@ class PrivateTaskAPITests(TestCase):
 
     def test_partial_update(self):
         """Test partial update if a task."""
-        original_link = 'https://example.com/task.pdf'
         task = create_task(
             user=self.user,
             title='Simple',
-            link=original_link,
         )
 
         payload = {'title': 'New task title'}
@@ -139,7 +134,6 @@ class PrivateTaskAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         task.refresh_from_db()
         self.assertEqual(task.title, payload['title'])
-        self.assertEqual(task.link, original_link)
         self.assertEqual(task.user, self.user)
 
     def test_full_update(self):
@@ -147,14 +141,12 @@ class PrivateTaskAPITests(TestCase):
         task = create_task(
             user=self.user,
             title='Sample task title',
-            link='https://example.com/task.pdf',
             description='Simple task description',
         )
 
         payload = {
             'title': 'Sample task title',
             'description': 'Sample description',
-            'sub_tasks': ['Some subtask'],
             'description': 'Sample description',
             'priority': 'Low',
         }

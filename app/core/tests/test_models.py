@@ -21,15 +21,13 @@ def create_superuser(email='user@example.com', password='testpass123'):
 def create_task(user,
     title='Sample task title.',
     description='Sample task description.',
-    sub_tasks=['Do something extra'],
     priority='Low'):
     """Create and return a new Task"""
     return models.Task.objects.create(
-            user,
-            title,
-            description,
-            sub_tasks,
-            priority,
+            user=user,
+            title=title,
+            description=description,
+            priority=priority,
         )
 
 
@@ -91,6 +89,6 @@ class ModelTests(TestCase):
     def test_create_sub_task(self):
         """Test creating a sub task is successful."""
         user = create_user()
-        sub_task = models.SubTask.objects.create(user=user, context_text='Some Subtask')
+        sub_task = models.Subtask.objects.create(title='Some Subtask')
 
-        self.assertEqual(str(sub_task), sub_task.name)
+        self.assertEqual(str(sub_task), sub_task.title)

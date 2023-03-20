@@ -57,6 +57,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
 
 
+class Board(models.Model):
+    """Board Object."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+
+class Subtask(models.Model):
+    """Subtask object."""
+    title = models.CharField(max_length=255)
+    done = models.BooleanField(default=False)
+    def __str__(self):
+        return self.title
+
+
 class Task(models.Model):
     """Task object."""
 
@@ -68,9 +84,8 @@ class Task(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    sub_tasks = ArrayField(models.TextField(blank=True))
+    assignees = models.ManyToManyField(User, default=list, blank=True, related_name='assignee')
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='Low')
-    link = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.title
