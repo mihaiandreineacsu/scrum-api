@@ -1,5 +1,5 @@
 """
-Tests for task APIs.
+Tests for subtask APIs.
 """
 from django.contrib.auth import get_user_model
 from django.test import TestCase

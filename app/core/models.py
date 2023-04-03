@@ -11,6 +11,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.contrib.postgres.fields import ArrayField
+from datetime import date, datetime
 
 
 def user_image_file_path(instance, filename):
@@ -63,6 +64,9 @@ class Board(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
+    created_at = models.DateField(default=datetime.now)
+    def __str__(self):
+        return self.created_at
 
 
 class Subtask(models.Model):

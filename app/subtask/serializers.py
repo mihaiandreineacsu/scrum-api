@@ -13,10 +13,3 @@ class SubtaskSerializer(serializers.ModelSerializer):
         model = Subtask
         fields = ['id', 'title', 'done']
         read_only_fields = ['id']
-
-
-# class TaskDetailSerializer(TaskSerializer):
-#     """Serializer for Task detail view."""
-
-#     class Meta(TaskSerializer.Meta):
-#         fields = TaskSerializer.Meta.fields + ['description']

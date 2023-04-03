@@ -92,3 +92,10 @@ class ModelTests(TestCase):
         sub_task = models.Subtask.objects.create(title='Some Subtask')
 
         self.assertEqual(str(sub_task), sub_task.title)
+
+    def test_create_board(self):
+        """Test creating a board is successful."""
+        user = create_user()
+        board = models.Board.objects.create(user=user)
+
+        self.assertNotEquals(board, None)

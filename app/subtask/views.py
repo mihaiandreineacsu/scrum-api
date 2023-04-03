@@ -1,5 +1,5 @@
 """
-Views for the task APIs.
+Views for the subtask APIs.
 """
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
