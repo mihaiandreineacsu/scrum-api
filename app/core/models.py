@@ -93,3 +93,11 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Summary(models.Model):
+    """Summary object"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )

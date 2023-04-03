@@ -1,5 +1,5 @@
 """
-URL mappings for the subtask app.
+URL mappings for the summary app.
 """
 from django.urls import (
     path,
@@ -8,12 +8,12 @@ from django.urls import (
 
 from rest_framework.routers import DefaultRouter
 
-from subtask import views
+from summary import views
 
 router = DefaultRouter()
-router.register('subtasks', views.SubtaskViewSet)
+router.register('summary', views.SummaryViewSet)
 
-app_name = 'subtask'
+app_name = 'summary'
 
 urlpatterns = [
     path('', include(router.urls)),

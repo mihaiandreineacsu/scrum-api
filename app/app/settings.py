@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'user',
     'task',
     'board',
-    'subtask'
+    'subtask',
+    'summary',
 ]
 
 MIDDLEWARE = [

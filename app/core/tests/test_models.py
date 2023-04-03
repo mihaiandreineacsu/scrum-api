@@ -99,3 +99,8 @@ class ModelTests(TestCase):
         board = models.Board.objects.create(user=user)
 
         self.assertNotEquals(board, None)
+
+    def test_create_summary(self):
+        """Test creating a summary is successful."""
+        user = create_user()
+        summary = models.Summary.objects.create(user=user)
