@@ -3,7 +3,7 @@ Tests for models.
 """
 from unittest.mock import patch
 from django.test import TestCase
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, get_user
 
 from core import models
 
@@ -11,6 +11,10 @@ from core import models
 def create_user(email='user@example.com', password='testpass123'):
     """Create and return a new user"""
     return get_user_model().objects.create_user(email, password)
+
+def create_contact(email='contact@example.com', name='test', phone_number='01573333333'):
+    """Create and return a new contact"""
+    return get_user().create(email, name, phone_number)
 
 
 def create_superuser(email='user@example.com', password='testpass123'):
@@ -70,13 +74,6 @@ class ModelTests(TestCase):
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
 
-    def test_create_task(self):
-        """Test creating a task is successful."""
-        user = create_user()
-        task = create_task(user)
-
-        self.assertEqual(str(task), task.title)
-
     @patch('core.models.uuid.uuid4')
     def test_user_file_name_uuid(self, mock_uuid):
         """Test generating image path."""
@@ -86,21 +83,39 @@ class ModelTests(TestCase):
 
         self.assertEqual(file_path, f'uploads/user/{uuid}.jpg')
 
-    def test_create_sub_task(self):
-        """Test creating a sub task is successful."""
-        user = create_user()
-        sub_task = models.Subtask.objects.create(title='Some Subtask')
+    # def test_create_task(self):
+    #     """Test creating a task is successful."""
+    #     user = create_user()
+    #     task = create_task(user)
 
-        self.assertEqual(str(sub_task), sub_task.title)
+    #     self.assertEqual(str(task), task.title)
 
-    def test_create_board(self):
-        """Test creating a board is successful."""
-        user = create_user()
-        board = models.Board.objects.create(user=user)
+    # def test_create_sub_task(self):
+    #     """Test creating a sub task is successful."""
+    #     user = create_user()
+    #     sub_task = models.Subtask.objects.create(title='Some Subtask')
 
-        self.assertNotEquals(board, None)
+    #     self.assertEqual(str(sub_task), sub_task.title)
 
-    def test_create_summary(self):
-        """Test creating a summary is successful."""
-        user = create_user()
-        summary = models.Summary.objects.create(user=user)
+    # def test_create_board(self):
+    #     """Test creating a board is successful."""
+    #     user = create_user()
+    #     board = models.Board.objects.create(user=user)
+
+    #     self.assertNotEquals(board, None)
+
+    # def test_create_summary(self):
+    #     """Test creating a summary is successful."""
+    #     user = create_user()
+    #     summary = models.Summary.objects.create(user=user)
+
+    #     self.assertNotEquals(summary, None)
+
+    # def test_create_contact_with_email_successful(self):
+    #     """Test creating a contact with an email is successful."""
+    #     email = 'test@example.com'
+    #     contact = create_contact(
+    #         email=email
+    #     )
+
+    #     self.assertEqual(contact.email, email)

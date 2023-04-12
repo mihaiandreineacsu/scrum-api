@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'board',
     'subtask',
     'summary',
+    'contact',
 ]
 
 MIDDLEWARE = [
