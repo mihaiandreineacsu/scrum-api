@@ -12,6 +12,7 @@ from django.contrib.auth.models import (
 )
 from django.contrib.postgres.fields import ArrayField
 from datetime import date, datetime
+from colorfield.fields import ColorField
 
 
 def user_image_file_path(instance, filename):
@@ -58,6 +59,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
 
 
+class Category(models.Model):
+    """Category Object"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(max_length=255)
+    color = ColorField(default="#FFF0000")
+    def __str__(self):
+        return self.name
+
+
+
 class Board(models.Model):
     """Board Object."""
     user = models.ForeignKey(
@@ -69,12 +83,15 @@ class Board(models.Model):
         return self.created_at
 
 
-class Subtask(models.Model):
-    """Subtask object."""
-    title = models.CharField(max_length=255)
-    done = models.BooleanField(default=False)
-    def __str__(self):
-        return self.title
+class Contact(models.Model):
+    """Contact object"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    email = models.EmailField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=255)
 
 
 class Task(models.Model):
@@ -88,11 +105,23 @@ class Task(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    assignees = models.ManyToManyField(User, default=list, blank=True, related_name='assignee')
+    assignees = models.ManyToManyField(Contact, default=list, blank=True, related_name='assignee')
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='Low')
 
     def __str__(self):
         return self.title
+
+class Subtask(models.Model):
+    """Subtask object."""
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, default=None, related_name='subtasks')
+    title = models.CharField(max_length=255)
+    done = models.BooleanField(default=False)
+    def __str__(self):
+        return self.title
+
+
+
+
 
 
 class Summary(models.Model):
@@ -101,13 +130,3 @@ class Summary(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-
-class Contact(models.Model):
-    """Contact object"""
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    email = models.EmailField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=255)

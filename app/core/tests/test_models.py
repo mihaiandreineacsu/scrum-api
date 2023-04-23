@@ -12,27 +12,33 @@ def create_user(email='user@example.com', password='testpass123'):
     """Create and return a new user"""
     return get_user_model().objects.create_user(email, password)
 
-def create_contact(email='contact@example.com', name='test', phone_number='01573333333'):
-    """Create and return a new contact"""
-    return get_user().create(email, name, phone_number)
-
 
 def create_superuser(email='user@example.com', password='testpass123'):
     """Create and return a new user"""
     return get_user_model().objects.create_superuser(email, password)
 
 
-def create_task(user,
-    title='Sample task title.',
-    description='Sample task description.',
-    priority='Low'):
-    """Create and return a new Task"""
-    return models.Task.objects.create(
-            user=user,
-            title=title,
-            description=description,
-            priority=priority,
-        )
+def create_category(user,name='Category', color='#FF0000'):
+    """Create and return a new category"""
+    return models.Category.objects.create(user=user,name=name, color=color)
+
+
+# def create_contact(email='contact@example.com', name='test', phone_number='01573333333'):
+#     """Create and return a new contact"""
+#     return get_user().create(email, name, phone_number)
+
+
+# def create_task(user,
+#     title='Sample task title.',
+#     description='Sample task description.',
+#     priority='Low'):
+#     """Create and return a new Task"""
+#     return models.Task.objects.create(
+#             user=user,
+#             title=title,
+#             description=description,
+#             priority=priority,
+#         )
 
 
 class ModelTests(TestCase):
@@ -82,6 +88,13 @@ class ModelTests(TestCase):
         file_path = models.user_image_file_path(None, 'example.jpg')
 
         self.assertEqual(file_path, f'uploads/user/{uuid}.jpg')
+
+    def test_create_category(self):
+        """Test creating a category is successful"""
+        user = create_user()
+        category = create_category(user)
+
+        self.assertEqual(str(category), category.name)
 
     # def test_create_task(self):
     #     """Test creating a task is successful."""

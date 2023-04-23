@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'subtask',
     'summary',
     'contact',
+    'colorfield',
+    'category'
 ]
 
 MIDDLEWARE = [

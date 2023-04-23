@@ -37,6 +37,7 @@ urlpatterns = [
     path('api/board/', include('board.urls')),
     path('api/summary/', include('summary.urls')),
     path('api/contact/', include('contact.urls')),
+    path('api/category/', include('category.urls')),
 ]
 
 if settings.DEBUG:
