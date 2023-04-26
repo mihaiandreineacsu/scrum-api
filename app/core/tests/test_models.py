@@ -23,9 +23,15 @@ def create_category(user,name='Category', color='#FF0000'):
     return models.Category.objects.create(user=user,name=name, color=color)
 
 
-# def create_contact(email='contact@example.com', name='test', phone_number='01573333333'):
-#     """Create and return a new contact"""
-#     return get_user().create(email, name, phone_number)
+def create_contact(user,email='contact@example.com', name='test', phone_number='01573333333'):
+    """Create and return a new contact"""
+    defaults = {
+        'user': user,
+        'email': email,
+        'name': name,
+        'phone_number': phone_number
+    }
+    return models.Contact.objects.create(**defaults)
 
 
 # def create_task(user,
@@ -96,6 +102,17 @@ class ModelTests(TestCase):
 
         self.assertEqual(str(category), category.name)
 
+    def test_create_contact_with_email_successful(self):
+        """Test creating a contact with an email is successful."""
+        user = create_user()
+        email = 'test@example.com'
+        contact = create_contact(
+            user=user,
+            email=email
+        )
+
+        self.assertEqual(contact.email, email)
+
     # def test_create_task(self):
     #     """Test creating a task is successful."""
     #     user = create_user()
@@ -123,12 +140,3 @@ class ModelTests(TestCase):
     #     summary = models.Summary.objects.create(user=user)
 
     #     self.assertNotEquals(summary, None)
-
-    # def test_create_contact_with_email_successful(self):
-    #     """Test creating a contact with an email is successful."""
-    #     email = 'test@example.com'
-    #     contact = create_contact(
-    #         email=email
-    #     )
-
-    #     self.assertEqual(contact.email, email)

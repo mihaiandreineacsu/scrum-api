@@ -94,6 +94,18 @@ class Contact(models.Model):
     phone_number = models.CharField(max_length=255)
 
 
+class Subtask(models.Model):
+    """Subtask object."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    title = models.CharField(max_length=255)
+    done = models.BooleanField(default=False)
+    def __str__(self):
+        return self.title
+
+
 class Task(models.Model):
     """Task object."""
 
@@ -102,26 +114,18 @@ class Task(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        editable=False
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    assignees = models.ManyToManyField(Contact, default=list, blank=True, related_name='assignee')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    assignees = models.ManyToManyField(Contact, default=list, blank=True, related_name='assignees')
+    subtasks = models.ManyToManyField(Subtask, default=list, blank=True, related_name='subtasks')
+    due_date = models.DateField(null=False, blank=False)
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='Low')
 
     def __str__(self):
         return self.title
-
-class Subtask(models.Model):
-    """Subtask object."""
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, default=None, related_name='subtasks')
-    title = models.CharField(max_length=255)
-    done = models.BooleanField(default=False)
-    def __str__(self):
-        return self.title
-
-
-
-
 
 
 class Summary(models.Model):
