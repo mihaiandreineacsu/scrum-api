@@ -1,6 +1,7 @@
 """
 Tests for models.
 """
+from datetime import date
 from unittest.mock import patch
 from django.test import TestCase
 from django.contrib.auth import get_user_model, get_user
@@ -34,17 +35,30 @@ def create_contact(user,email='contact@example.com', name='test', phone_number='
     return models.Contact.objects.create(**defaults)
 
 
-# def create_task(user,
-#     title='Sample task title.',
-#     description='Sample task description.',
-#     priority='Low'):
-#     """Create and return a new Task"""
-#     return models.Task.objects.create(
-#             user=user,
-#             title=title,
-#             description=description,
-#             priority=priority,
-#         )
+def create_task(user, **params):
+    """Create and return a sample task."""
+    defaults = {
+        'title': 'Sample task title',
+        'description': 'Sample description',
+        'priority': 'Low',
+        'due_date': date.today(),
+        'category': create_category(user=user),
+        'priority': 'Low'
+    }
+    defaults.update(params)
+
+    task = models.Task.objects.create(user=user, **defaults)
+    return task
+
+def create_subtask(user, **params):
+    """Create and return a sample subtask"""
+    defaults = {
+        'title': 'Some Subtask',
+        'done': False
+    }
+    defaults.update(params)
+    subtask = models.Subtask.objects.create(user=user, **defaults)
+    return subtask
 
 
 class ModelTests(TestCase):
@@ -113,19 +127,19 @@ class ModelTests(TestCase):
 
         self.assertEqual(contact.email, email)
 
-    # def test_create_task(self):
-    #     """Test creating a task is successful."""
-    #     user = create_user()
-    #     task = create_task(user)
+    def test_create_task(self):
+        """Test creating a task is successful."""
+        user = create_user()
+        task = create_task(user)
 
-    #     self.assertEqual(str(task), task.title)
+        self.assertEqual(str(task), task.title)
 
-    # def test_create_sub_task(self):
-    #     """Test creating a sub task is successful."""
-    #     user = create_user()
-    #     sub_task = models.Subtask.objects.create(title='Some Subtask')
+    def test_create_sub_task(self):
+        """Test creating a sub task is successful."""
+        user = create_user()
+        sub_task = create_subtask(user=user)
 
-    #     self.assertEqual(str(sub_task), sub_task.title)
+        self.assertEqual(str(sub_task), sub_task.title)
 
     # def test_create_board(self):
     #     """Test creating a board is successful."""
