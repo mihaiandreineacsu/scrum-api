@@ -132,7 +132,7 @@ class PrivateTaskAPITests(TestCase):
 
         for k, v in payload.items():
             task_attr = getattr(task, k)
-            if k != 'assignees' and k != 'subtasks' and k != 'category':
+            if k != 'assignees' and k != 'subtasks' and k != 'category' and k != 'user':
                 self.assertEqual(task_attr, v)
 
         self.assertEqual(list(task.assignees.all()), [contact1, contact2])
@@ -211,12 +211,12 @@ class PrivateTaskAPITests(TestCase):
 
         for k, v in payload.items():
             task_attr = getattr(task, k)
-            if k != 'assignees' and k != 'subtasks' and k != 'category':
+            if k != 'assignees' and k != 'subtasks' and k != 'category' and k != 'user':
                 self.assertEqual(task_attr, v)
 
         self.assertEqual(list(task.assignees.all()), [contact1, contact2])
         self.assertEqual(list(task.subtasks.all()), [subtask1, subtask2])
-        self.assertEqual(task.category, category)
+        self.assertEqual(task.category.id, category.id)
         self.assertEqual(task.user, self.user)
 
     def test_update_user_returns_error(self):

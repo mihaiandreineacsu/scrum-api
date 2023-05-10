@@ -119,10 +119,12 @@ class Task(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    assignees = models.ManyToManyField(Contact, default=list, blank=True, related_name='assignees')
-    subtasks = models.ManyToManyField(Subtask, default=list, blank=True, related_name='subtasks')
-    due_date = models.DateField(null=False, blank=False)
-    priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='Low')
+    assignees = models.ManyToManyField(Contact, blank=True, related_name='assignees')
+    subtasks = models.ManyToManyField(Subtask, blank=True, related_name='subtasks')
+    due_date = models.DateField(null=True, blank=True)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Low')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
