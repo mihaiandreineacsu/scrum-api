@@ -31,21 +31,3 @@ class TaskViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Create a new task."""
         task = serializer.save(user=self.request.user)
-        # from task.serializers import TaskSerializer
-        # print(TaskSerializer(task), flush=True)
-
-        # subtasks_data = self.request.data.get('subtasks', [])
-        # if isinstance(subtasks_data, str):
-        #     subtasks_data = json.loads(subtasks_data)
-        # assignees_data = self.request.data.get('assignees', [])
-        # if isinstance(assignees_data, str):
-        #     assignees_data = json.loads(subtasks_data)
-        # task.assignees.set(assignees_data)
-
-        # subtasks = []
-        # for subtask_data in subtasks_data:
-        #     subtask = Subtask(task=task,user=self.request.user,**subtask_data)
-        #     subtasks.append(subtask)
-
-        # if subtasks:
-        #     Subtask.objects.bulk_create(subtasks)
