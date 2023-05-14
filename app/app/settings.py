@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'summary',
     'contact',
     'colorfield',
-    'category'
+    'category',
+    'list',
 ]
 
 MIDDLEWARE = [

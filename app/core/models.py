@@ -10,8 +10,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-from django.contrib.postgres.fields import ArrayField
-from datetime import date, datetime
+
 from colorfield.fields import ColorField
 
 
@@ -53,23 +52,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     image = models.ImageField(null=True, upload_to=user_image_file_path)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-
-
-class Category(models.Model):
-    """Category Object"""
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    name = models.CharField(max_length=255)
-    color = ColorField(default="#FFF0000")
-    def __str__(self):
-        return self.name
-
 
 
 class Board(models.Model):
@@ -78,9 +66,24 @@ class Board(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    created_at = models.DateField(default=datetime.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.created_at
+
+
+class List(models.Model):
+    """List Object."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(max_length=255,default='Untitled')
+    board = models.ForeignKey(Board, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.name
 
 
 class Contact(models.Model):
@@ -92,6 +95,8 @@ class Contact(models.Model):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Subtask(models.Model):
@@ -102,8 +107,26 @@ class Subtask(models.Model):
     )
     title = models.CharField(max_length=255)
     done = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.title
+
+
+class Category(models.Model):
+    """Category Object"""
+    class Meta:
+        verbose_name_plural = "Categories"
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(max_length=255)
+    color = ColorField(default="#FFF0000")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.name
 
 
 class Task(models.Model):
@@ -118,13 +141,14 @@ class Task(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     assignees = models.ManyToManyField(Contact, blank=True, related_name='assignees')
     subtasks = models.ManyToManyField(Subtask, blank=True, related_name='subtasks')
     due_date = models.DateField(null=True, blank=True)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Low')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    list = models.ForeignKey(List, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -132,6 +156,8 @@ class Task(models.Model):
 
 class Summary(models.Model):
     """Summary object"""
+    class Meta:
+        verbose_name_plural = "Summaries"
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

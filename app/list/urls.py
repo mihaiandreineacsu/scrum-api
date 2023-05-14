@@ -1,7 +1,6 @@
 """
-URL mappings for category API.
+URL mappings for the list app.
 """
-
 from django.urls import (
     path,
     include,
@@ -9,12 +8,12 @@ from django.urls import (
 
 from rest_framework.routers import DefaultRouter
 
-from category import views
+from list import views
 
 router = DefaultRouter()
-router.register('categories', views.CategoryViewSet)
+router.register('lists', views.ListViewSet)
 
-app_name = 'category'
+app_name = 'list'
 
 urlpatterns = [
     path('', include(router.urls)),

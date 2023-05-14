@@ -7,7 +7,7 @@ from core.models import Category
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """Serializer for categorys."""
+    """Serializer for categories."""
 
     class Meta:
         model = Category

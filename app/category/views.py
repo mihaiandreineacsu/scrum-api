@@ -19,7 +19,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Retrieve categorys for authenticated user."""
+        """Retrieve categories for authenticated user."""
         return self.queryset.filter(user=self.request.user).order_by(Lower('name'))
 
     def get_serializer_class(self):

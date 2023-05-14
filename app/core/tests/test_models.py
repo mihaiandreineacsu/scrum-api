@@ -61,6 +61,15 @@ def create_subtask(user, **params):
     return subtask
 
 
+def create_list(user, **params):
+    """Create and return a sample list"""
+    defaults = {
+        'name': 'Some List  Name',
+    }
+    defaults.update(params)
+    list  = models.List.objects.create(user=user, **defaults)
+    return list
+
 class ModelTests(TestCase):
     """Test models."""
 
@@ -141,12 +150,18 @@ class ModelTests(TestCase):
 
         self.assertEqual(str(sub_task), sub_task.title)
 
-    # def test_create_board(self):
-    #     """Test creating a board is successful."""
-    #     user = create_user()
-    #     board = models.Board.objects.create(user=user)
+    def test_create_list(self):
+        """Test creating a list is successful."""
+        user = create_user()
+        list = create_list(user=user)
+        self.assertEqual(str(list), list.name)
 
-    #     self.assertNotEquals(board, None)
+    def test_create_board(self):
+        """Test creating a board is successful."""
+        user = create_user()
+        board = models.Board.objects.create(user=user)
+
+        self.assertNotEquals(board, None)
 
     # def test_create_summary(self):
     #     """Test creating a summary is successful."""

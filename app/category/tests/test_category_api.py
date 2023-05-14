@@ -15,7 +15,7 @@ from category.serializers import (
 )
 
 
-CATEGORYS_URL = reverse('category:category-list')
+CATEGORIES_URL = reverse('category:category-list')
 
 
 def create_category(user, **params):
@@ -50,7 +50,7 @@ class PublicCategoryAPITests(TestCase):
 
     def test_auth_required(self):
         """Test auth is required to call API."""
-        res = self.client.get(CATEGORYS_URL)
+        res = self.client.get(CATEGORIES_URL)
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -66,20 +66,20 @@ class PrivateCategoryAPITests(TestCase):
         )
         self.client.force_authenticate(self.user)
 
-    def test_retrieve_categorys(self):
-        """Test retrieving a list of categorys."""
+    def test_retrieve_categories(self):
+        """Test retrieving a list of categories."""
         create_category(user=self.user)
         create_category(user=self.user, name="Sales", color="#AAABBB")
 
-        res = self.client.get(CATEGORYS_URL)
+        res = self.client.get(CATEGORIES_URL)
 
-        categorys = Category.objects.all().order_by('name')
-        serializer = CategorySerializer(categorys, many=True)
+        categories = Category.objects.all().order_by('name')
+        serializer = CategorySerializer(categories, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
     def test_category_list_limited_to_user(self):
-        """Test list of categorys is limited to authenticated user."""
+        """Test list of categories is limited to authenticated user."""
         other_user = get_user_model().objects.create_user(
             'other@example.com',
             'testpass123',
@@ -87,10 +87,10 @@ class PrivateCategoryAPITests(TestCase):
         create_category(user=other_user)
         create_category(user=self.user, name="Category 2")
 
-        res = self.client.get(CATEGORYS_URL)
+        res = self.client.get(CATEGORIES_URL)
 
-        categorys = Category.objects.filter(user=self.user)
-        serializer = CategorySerializer(categorys, many=True)
+        categories = Category.objects.filter(user=self.user)
+        serializer = CategorySerializer(categories, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
@@ -100,7 +100,7 @@ class PrivateCategoryAPITests(TestCase):
             'name': 'Some Category',
             'color': '#000000',
         }
-        res = self.client.post(CATEGORYS_URL, payload)
+        res = self.client.post(CATEGORIES_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         category = Category.objects.get(id=res.data['id'])
