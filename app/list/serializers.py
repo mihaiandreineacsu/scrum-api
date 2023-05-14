@@ -9,5 +9,5 @@ class ListSerializer(serializers.ModelSerializer):
     """Serializer for lists."""
     class Meta:
         model = List
-        fields = ['id', 'name', 'board', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'name', 'board', 'created_at', 'updated_at']
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
