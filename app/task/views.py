@@ -2,7 +2,7 @@
 Views for the task APIs.
 """
 import json
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
@@ -16,10 +16,18 @@ class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
 
     def get_queryset(self):
         """Retrieve tasks for authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by('-id')
+        queryset = self.queryset.filter(user=self.request.user).order_by('-id')
+        # Get the query parameter
+        list_is_null = self.request.query_params.get('list_is_null', None)
+
+        if list_is_null is not None:
+            queryset = queryset.filter(list__isnull=list_is_null.lower() in ['true', '1', 'yes'])
+
+        return queryset
 
     def get_serializer_class(self):
         """Return the serializer class for request."""
