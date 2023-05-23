@@ -80,7 +80,7 @@ class List(models.Model):
         on_delete=models.CASCADE,
     )
     name = models.CharField(max_length=255,default='Untitled')
-    board = models.ForeignKey(Board, on_delete=models.SET_NULL, null=True, blank=True)
+    board = models.ForeignKey(Board, on_delete=models.SET_NULL, null=True, blank=True, related_name='lists')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
@@ -149,7 +149,7 @@ class Task(models.Model):
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Low')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    list = models.ForeignKey(List, on_delete=models.SET_NULL, null=True, blank=True)
+    list = models.ForeignKey(List, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
 
     def __str__(self):
         return self.title
