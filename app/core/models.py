@@ -100,20 +100,6 @@ class Contact(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class Subtask(models.Model):
-    """Subtask object."""
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    title = models.CharField(max_length=255)
-    done = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    def __str__(self):
-        return self.title
-
-
 class Category(models.Model):
     """Category Object"""
     class Meta:
@@ -144,13 +130,28 @@ class Task(models.Model):
     description = models.TextField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     assignees = models.ManyToManyField(Contact, blank=True, related_name='assignees')
-    subtasks = models.ManyToManyField(Subtask, blank=True, related_name='subtasks')
+    # subtasks = models.ManyToManyField(Subtask, blank=True, related_name='subtasks')
     due_date = models.DateField(null=True, blank=True)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Low')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     list = models.ForeignKey(List, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
 
+    def __str__(self):
+        return self.title
+
+
+class Subtask(models.Model):
+    """Subtask object."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="subtasks")
+    title = models.CharField(max_length=255)
+    done = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.title
 
