@@ -33,6 +33,29 @@ class TaskSerializer(serializers.ModelSerializer):
                 Subtask.objects.create(task=task, user=task.user, **subtask_data)
         return task
 
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        # ... any other fields you want to update directly on the Task
+
+        # Update related Subtasks
+        subtasks_data = validated_data.pop('subtasks', None)
+        if subtasks_data is not None:
+            for subtask_data in subtasks_data:
+                subtask_id = subtask_data.get('id', None)
+                if subtask_id:
+                    # If the subtask already exists, update it
+                    subtask = instance.subtasks.get(id=subtask_id)
+                    for attr, value in subtask_data.items():
+                        setattr(subtask, attr, value)
+                    subtask.save()
+                else:
+                    # If the subtask does not exist, create it
+                    Subtask.objects.create(user=instance.user, task=instance, **subtask_data)
+
+        instance.save()
+        return instance
+
     def to_representation(self, instance):
         self.fields['category'] = CategorySerializer(read_only=True)
         self.fields['assignees'] = ContactSerializer(read_only=True, many=True)
