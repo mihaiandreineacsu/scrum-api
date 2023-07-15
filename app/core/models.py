@@ -136,7 +136,7 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     list = models.ForeignKey(List, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
-
+    order = models.PositiveIntegerField(default=0, blank=False, null=False)
     def __str__(self):
         return self.title
 

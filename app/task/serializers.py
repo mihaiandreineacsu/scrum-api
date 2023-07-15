@@ -17,7 +17,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['id', 'title', 'description', 'category', 'assignees', 'subtasks', 'due_date', 'priority', 'created_at', 'updated_at', 'list']
+        fields = ['id', 'title', 'description', 'category', 'assignees', 'subtasks', 'due_date', 'priority', 'created_at', 'updated_at', 'list', 'order']
         read_only_fields = ['id', 'created_at', 'updated_at']
         write_only_fields = ['list']
 
@@ -36,19 +36,30 @@ class TaskSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
+        instance.category = validated_data.get('category', instance.category)
+        instance.due_date = validated_data.get('due_date', instance.due_date)
+        instance.priority = validated_data.get('priority', instance.priority)
+        instance.list = validated_data.get('list', instance.list)
+        assignees_data = validated_data.pop('assignees', None)
+        subtasks_data = validated_data.pop('subtasks', None)
+
+        if assignees_data:
+            instance.assignees.set(assignees_data)
         # ... any other fields you want to update directly on the Task
 
         # Update related Subtasks
-        subtasks_data = validated_data.pop('subtasks', None)
+
         if subtasks_data is not None:
             for subtask_data in subtasks_data:
                 subtask_id = subtask_data.get('id', None)
                 if subtask_id:
-                    # If the subtask already exists, update it
-                    subtask = instance.subtasks.get(id=subtask_id)
-                    for attr, value in subtask_data.items():
-                        setattr(subtask, attr, value)
-                    subtask.save()
+                    try:
+                        subtask = instance.subtasks.get(id=subtask_id)
+                        for attr, value in subtask_data.items():
+                            setattr(subtask, attr, value)
+                        subtask.save()
+                    except Subtask.DoesNotExist:
+                        raise serializers.ValidationError("Subtask with id %s does not exist" % subtask_id)
                 else:
                     # If the subtask does not exist, create it
                     Subtask.objects.create(user=instance.user, task=instance, **subtask_data)
