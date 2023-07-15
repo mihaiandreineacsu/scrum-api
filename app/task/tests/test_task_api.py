@@ -25,11 +25,21 @@ def create_subtask(user, **params):
     """Create and return a sample subtask"""
     defaults = {
         'title': 'Some Subtask',
-        'done': False
+        'done': False,
+        'task': create_task(user=user)
     }
     defaults.update(params)
     subtask = Subtask.objects.create(user=user, **defaults)
     return subtask
+
+def create_subtask_payload(**params):
+    """Create and return a sample subtask"""
+    defaults = {
+        'title': 'Some Subtask',
+        'done': False
+    }
+    defaults.update(params)
+    return defaults
 
 def create_contact(user, **params):
     """Create and return a sample contact."""
@@ -114,8 +124,8 @@ class PrivateTaskAPITests(TestCase):
         category = create_category(user=self.user)
         contact1 = create_contact(user=self.user)
         contact2 = create_contact(user=self.user,name="Mihai", phone_number="015777777888", email="mihai@dev.com")
-        subtask1 = create_subtask(user=self.user)
-        subtask2 = create_subtask(user=self.user, title="Do this")
+        subtask1 = create_subtask_payload()
+        subtask2 = create_subtask_payload(title="Do this")
         payload = {
             'title': 'Sample task title',
             'description': 'Sample description',
@@ -123,7 +133,7 @@ class PrivateTaskAPITests(TestCase):
             'assignees': [contact1.id, contact2.id],
             'priority': 'Low',
             'due_date': date.today(),
-            'subtasks': [subtask1.id, subtask2.id]
+            'subtasks': [subtask1, subtask2]
         }
         res = self.client.post(TASKS_URL, payload)
 
@@ -192,8 +202,8 @@ class PrivateTaskAPITests(TestCase):
         category = create_category(user=self.user)
         contact1 = create_contact(user=self.user)
         contact2 = create_contact(user=self.user,name="Mihai", phone_number="015777777888", email="mihai@dev.com")
-        subtask1 = create_subtask(user=self.user)
-        subtask2 = create_subtask(user=self.user, title="Do this")
+        subtask1 = create_subtask(user=self.user, task=task)
+        subtask2 = create_subtask(user=self.user, title="Do this", task=task)
         payload = {
             'title': 'Sample task title',
             'description': 'Sample description',

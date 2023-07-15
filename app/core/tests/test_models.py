@@ -54,7 +54,8 @@ def create_subtask(user, **params):
     """Create and return a sample subtask"""
     defaults = {
         'title': 'Some Subtask',
-        'done': False
+        'done': False,
+        'task': create_task(user=user),
     }
     defaults.update(params)
     subtask = models.Subtask.objects.create(user=user, **defaults)

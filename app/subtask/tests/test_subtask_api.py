@@ -13,16 +13,37 @@ from core.models import Subtask
 from subtask.serializers import (
     SubtaskSerializer
 )
+from datetime import date
+from core import models
 
 
 SUBTASKS_URL = reverse('subtask:subtask-list')
 
+def create_category(user,name='Category', color='#FF0000'):
+    """Create and return a new category"""
+    return models.Category.objects.create(user=user,name=name, color=color)
+
+def create_task(user, **params):
+    """Create and return a sample task."""
+    defaults = {
+        'title': 'Sample task title',
+        'description': 'Sample description',
+        'priority': 'Low',
+        'due_date': date.today(),
+        'category': create_category(user=user),
+        'priority': 'Low'
+    }
+    defaults.update(params)
+
+    task = models.Task.objects.create(user=user, **defaults)
+    return task
 
 def create_subtask(user, **params):
     """Create and return a sample subtask."""
     defaults = {
         'title': 'Sample task title',
-        'done': False
+        'done': False,
+        'task': create_task(user=user)
     }
     defaults.update(params)
 
@@ -94,9 +115,11 @@ class PrivateSubtaskAPITests(TestCase):
 
     def test_create_subtask(self):
         """Test creating a subtask."""
+        task = create_task(user=self.user)
         payload = {
             'title': 'New Subtask',
             'done': False,
+            'task': task
         }
         res = self.client.post(SUBTASKS_URL, payload)
 
