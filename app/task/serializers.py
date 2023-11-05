@@ -50,19 +50,22 @@ class TaskSerializer(serializers.ModelSerializer):
         # Update related Subtasks
 
         if subtasks_data is not None:
-            for subtask_data in subtasks_data:
-                subtask_id = subtask_data.get('id', None)
-                if subtask_id:
-                    try:
-                        subtask = instance.subtasks.get(id=subtask_id)
-                        for attr, value in subtask_data.items():
-                            setattr(subtask, attr, value)
-                        subtask.save()
-                    except Subtask.DoesNotExist:
-                        raise serializers.ValidationError("Subtask with id %s does not exist" % subtask_id)
-                else:
-                    # If the subtask does not exist, create it
-                    Subtask.objects.create(user=instance.user, task=instance, **subtask_data)
+            if len(subtasks_data) == 0:
+                instance.subtasks.all().delete()
+            else:
+                for subtask_data in subtasks_data:
+                    subtask_id = subtask_data.get('id', None)
+                    if subtask_id:
+                        try:
+                            subtask = instance.subtasks.get(id=subtask_id)
+                            for attr, value in subtask_data.items():
+                                setattr(subtask, attr, value)
+                            subtask.save()
+                        except Subtask.DoesNotExist:
+                            raise serializers.ValidationError("Subtask with id %s does not exist" % subtask_id)
+                    else:
+                        # If the subtask does not exist, create it
+                        Subtask.objects.create(user=instance.user, task=instance, **subtask_data)
 
         instance.save()
         return instance

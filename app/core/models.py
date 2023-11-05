@@ -70,7 +70,7 @@ class Board(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
-        return self.created_at
+        return self.title
 
 
 class List(models.Model):
@@ -98,6 +98,8 @@ class Contact(models.Model):
     phone_number = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.name
 
 
 class Category(models.Model):
@@ -135,7 +137,7 @@ class Task(models.Model):
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Low')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    list = models.ForeignKey(List, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
+    list = models.ForeignKey(List, on_delete=models.CASCADE, null=True, blank=True, related_name='tasks')
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     def __str__(self):
         return self.title
@@ -164,3 +166,5 @@ class Summary(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

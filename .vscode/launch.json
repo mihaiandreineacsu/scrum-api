@@ -5,14 +5,16 @@
       "name": "Run Django",
       "type": "python",
       "request": "attach",
+      "connect": {
+        "host": "127.0.0.1",
+        "port": 3000
+      },
       "pathMappings": [
         {
           "localRoot": "${workspaceFolder}/app",
-          "remoteRoot": "/usr/src/app"
+          "remoteRoot": "/app"
         }
-      ],
-      "port": 3000,
-      "host": "127.0.0.1",
+      ]
     }
   ]
 }
