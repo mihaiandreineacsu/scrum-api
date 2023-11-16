@@ -86,8 +86,8 @@ admin.site.register(models.Contact, ContactAdmin)
 
 class ListAdmin(admin.ModelAdmin):
     ordering = ['id']
-    list_display = ['id', 'name', 'user', 'board', 'created_at', 'updated_at']
-    list_filter = ['created_at', 'updated_at', 'user']
+    list_display = ['id', 'name', 'user', 'board', 'created_at', 'updated_at', 'position']
+    list_filter = ['created_at', 'updated_at', 'user', 'position']
     search_fields = ['name', 'user']
 admin.site.register(models.List, ListAdmin)
 
