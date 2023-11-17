@@ -17,9 +17,22 @@ from colorfield.fields import ColorField
 def user_image_file_path(instance, filename):
     """Generate file path for new user image."""
     ext = os.path.splitext(filename)[1]
-    filename = f'{uuid.uuid4()}{ext}'
+    filename = f"{uuid.uuid4()}{ext}"
 
-    return os.path.join('uploads', 'user', filename)
+    return os.path.join("uploads", "user", filename)
+
+
+class TimeStampedModel(models.Model):
+    """
+    An abstract base class model that provides self-updating
+    `created_at` and `updated_at` fields.
+    """
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
 
 
 class UserManager(BaseUserManager):
@@ -28,7 +41,7 @@ class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         """Create, save and return a new user."""
         if not email:
-            raise ValueError('User must have an email address.')
+            raise ValueError("User must have an email address.")
         user = self.model(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -45,58 +58,55 @@ class UserManager(BaseUserManager):
         return user
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     """User in the system."""
+
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     image = models.ImageField(null=True, upload_to=user_image_file_path)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
 
 
-class Board(models.Model):
+class Board(TimeStampedModel):
     """Board Object."""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    title = models.CharField(max_length=255, default='Untitled')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    title = models.CharField(max_length=255, default="Untitled")
+
     def __str__(self):
         return self.title
 
 
-class List(models.Model):
+class List(TimeStampedModel):
     """List Object."""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    name = models.CharField(max_length=255,default='Untitled')
-    board = models.ForeignKey(Board, on_delete=models.SET_NULL, null=True, blank=True, related_name='lists')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=255, default="Untitled")
+    board = models.ForeignKey(
+        Board, on_delete=models.SET_NULL, null=True, blank=True, related_name="lists"
+    )
     position = models.IntegerField()
+
     def __str__(self):
         return self.name
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['board', 'position'], name='unique_position_per_board')
+            models.UniqueConstraint(
+                fields=["board", "position"], name="unique_position_per_board"
+            )
         ]
-
-    # def save(self, *args, **kwargs):
-    #     if self._state.adding:
-    #         max_position = List.objects.filter(board=self.board).aggregate(models.Max('position'))['position__max']
-    #         self.position = (max_position or 0) + 1
-    #     super().save(*args, **kwargs)
 
     @staticmethod
     def swap_positions(list1, list2):
@@ -116,9 +126,9 @@ class List(models.Model):
         list1.save()
 
 
-
-class Contact(models.Model):
+class Contact(TimeStampedModel):
     """Contact object"""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -126,55 +136,56 @@ class Contact(models.Model):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return self.name
 
 
-class Category(models.Model):
+class Category(TimeStampedModel):
     """Category Object"""
+
     class Meta:
         verbose_name_plural = "Categories"
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
     name = models.CharField(max_length=255)
     color = ColorField(default="#FFF0000")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return self.name
 
 
-class Task(models.Model):
+class Task(TimeStampedModel):
     """Task object."""
 
-    PRIORITY_CHOICES = [('Urgent', 'Urgent'), ('Medium', 'Medium'), ('Low', 'Low')]
+    PRIORITY_CHOICES = [("Urgent", "Urgent"), ("Medium", "Medium"), ("Low", "Low")]
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        editable=False
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
-    assignees = models.ManyToManyField(Contact, blank=True, related_name='assignees')
-    # subtasks = models.ManyToManyField(Subtask, blank=True, related_name='subtasks')
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    assignees = models.ManyToManyField(Contact, blank=True, related_name="assignees")
     due_date = models.DateField(null=True, blank=True)
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Low')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    list = models.ForeignKey(List, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default="Low")
+    list = models.ForeignKey(
+        List, on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks"
+    )
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
+
     def __str__(self):
         return self.title
 
 
-class Subtask(models.Model):
+class Subtask(TimeStampedModel):
     """Subtask object."""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -182,19 +193,18 @@ class Subtask(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="subtasks")
     title = models.CharField(max_length=255)
     done = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return self.title
 
 
-class Summary(models.Model):
+class Summary(TimeStampedModel):
     """Summary object"""
+
     class Meta:
         verbose_name_plural = "Summaries"
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
