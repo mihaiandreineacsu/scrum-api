@@ -25,3 +25,4 @@ class ListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
         write_only_fields = ["board"]
+        ordering = ["position"]

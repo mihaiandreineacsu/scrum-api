@@ -34,6 +34,7 @@ class TaskSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
         write_only_fields = ["list"]
+        ordering = ["position"]
 
     def create(self, validated_data):
         assignees_data = validated_data.pop("assignees", None)
