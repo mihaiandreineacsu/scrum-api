@@ -5,9 +5,9 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Max
+from django.db.models import Max, Prefetch
 
-from core.models import List
+from core.models import List, Task
 from list import serializers
 
 
@@ -21,7 +21,10 @@ class ListViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Retrieve list for authenticated user."""
-        return self.queryset.filter(user=self.request.user)
+        # Prefetch related tasks to optimize query performance
+        return self.queryset.filter(user=self.request.user).prefetch_related(
+            Prefetch('tasks', queryset=Task.objects.order_by('position'))
+        ).order_by('-id')
 
     def get_serializer_class(self):
         """Return the serializer class for request."""
