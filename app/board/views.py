@@ -4,8 +4,9 @@ Views for the board APIs.
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Prefetch
 
-from core.models import Board
+from core.models import Board ,List, Task
 from board import serializers
 
 
@@ -17,8 +18,12 @@ class BoardViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Retrieve boards for authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by('-id')
+        """Retrieve boards for authenticated user with lists and tasks ordered by position."""
+        return self.queryset.filter(user=self.request.user).prefetch_related(
+            Prefetch('lists', queryset=List.objects.prefetch_related(
+                Prefetch('tasks', queryset=Task.objects.order_by('position'))
+            ).order_by('position'))
+        ).order_by('-id')
 
     def get_serializer_class(self):
         """Return the serializer class for request."""
