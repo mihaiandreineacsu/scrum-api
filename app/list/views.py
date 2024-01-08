@@ -23,7 +23,7 @@ class ListViewSet(viewsets.ModelViewSet):
         """Retrieve list for authenticated user."""
         # Prefetch related tasks to optimize query performance
         return self.queryset.filter(user=self.request.user).prefetch_related(
-            Prefetch('tasks', queryset=Task.objects.order_by('position'))
+            Prefetch('tasks', queryset=Task.objects.order_by('-position'))
         ).order_by('-id')
 
     def get_serializer_class(self):

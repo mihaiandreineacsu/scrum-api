@@ -21,8 +21,8 @@ class BoardViewSet(viewsets.ModelViewSet):
         """Retrieve boards for authenticated user with lists and tasks ordered by position."""
         return self.queryset.filter(user=self.request.user).prefetch_related(
             Prefetch('lists', queryset=List.objects.prefetch_related(
-                Prefetch('tasks', queryset=Task.objects.order_by('position'))
-            ).order_by('position'))
+                Prefetch('tasks', queryset=Task.objects.order_by('-position'))
+            ).order_by('-position'))
         ).order_by('-id')
 
     def get_serializer_class(self):
