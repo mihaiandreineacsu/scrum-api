@@ -27,6 +27,10 @@ class PositionedModel(models.Model):
 
     position = models.IntegerField(null=True)
     parent_attribute = None  # This will be set in the subclasses
+    # Swap positions
+    temporary_position = (
+        None  # or another value that you're sure won't conflict
+    )
 
     class Meta:
         abstract = True
@@ -35,8 +39,36 @@ class PositionedModel(models.Model):
         ]
 
     @classmethod
+    def get_max_position(cls, parent_value=None):
+        """
+        Get the maximum position for a given parent attribute.
+        :param parent_value: The value of the parent attribute to filter by, can be None.
+        :return: The maximum position or None if no records are found.
+        """
+        if not cls.parent_attribute:
+            raise ValueError(f"parent_attribute is not set in {cls.__name__}")
+        filter_kwargs = {}
+        filter_kwargs = {cls.parent_attribute: parent_value}
+        aggregate_result = cls.objects.filter(**filter_kwargs).aggregate(models.Max("position"))
+        return aggregate_result["position__max"]
+
+    @classmethod
+    def get_min_position(cls, parent_value=None):
+        """
+        Get the minimum position for a given parent attribute.
+        :param parent_value: The value of the parent attribute to filter by, can be None.
+        :return: The minimum position or None if no records are found.
+        """
+        if not cls.parent_attribute:
+            raise ValueError(f"parent_attribute is not set in {cls.__name__}")
+        filter_kwargs = {}
+
+        filter_kwargs = {cls.parent_attribute: parent_value}
+        aggregate_result = cls.objects.filter(**filter_kwargs).aggregate(models.Min("position"))
+        return aggregate_result["position__min"]
+
+    @classmethod
     def swap_positions(cls, instance1, instance2):
-        print("Swap positions, task 1 {}, task 2 {}".format(instance1, instance2))
         if not cls.parent_attribute:
             raise ValueError(f"parent_attribute is not set in {cls.__name__}")
 
@@ -47,20 +79,14 @@ class PositionedModel(models.Model):
         parent1 = getattr(instance1, cls.parent_attribute)
         parent2 = getattr(instance2, cls.parent_attribute)
 
-        with transaction.atomic():
-            # Swap positions
-            temporary_position = (
-                None  # or another value that you're sure won't conflict
-            )
-            instance1_position = instance1.position
-            instance2_position = instance2.position
-            instance1.position = temporary_position
+        if parent1 != parent2:
+            raise ValueError("Instances do not have same parent!")
 
-            if parent1 != parent2:
-                if instance1_position == instance2_position:
-                    pass
-                setattr(instance1, cls.parent_attribute, parent2)
-            # raise ValueError("Instances are not in the same parent entity")
+        instance1_position = instance1.position
+        instance2_position = instance2.position
+
+        with transaction.atomic():
+            instance1.position = cls.temporary_position
             instance1.save()
 
             # Determine direction and range for shifting positions
@@ -84,12 +110,21 @@ class PositionedModel(models.Model):
 
                 instances_between.update(position=models.F("position") + 1)
                 instance2.position = instance2_position + 1
-            else:
-                pass
+
             instance2.save()
             # Move instance1 to instance2's position
             instance1.position = instance2_position
             instance1.save()
+
+    @classmethod
+    def swap_parent(cls, instance, new_parent, new_position):
+        # current_parent = getattr(instance, cls.parent_attribute)
+        with transaction.atomic():
+            instance.position = cls.temporary_position
+            setattr(instance, cls.parent_attribute, new_parent)
+            instance.position = new_position
+            instance.save()
+
 
     def __str__(self):
         return str(self.position)
