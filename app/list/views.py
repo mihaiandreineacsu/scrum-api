@@ -72,7 +72,7 @@ class ListViewSet(viewsets.ModelViewSet):
                 return Response(f"Invalid value type: {e}", status=status.HTTP_400_BAD_REQUEST)
             except IntegrityError as e:
                 return Response(f"Request did not end successfully: {e}", status=status.HTTP_409_CONFLICT)
-            except Task.DoesNotExist as e:
+            except List.DoesNotExist as e:
                 return Response(f"Bad Request: {e}", status=status.HTTP_404_NOT_FOUND)
 
         return super().update(request, *args, **kwargs)
