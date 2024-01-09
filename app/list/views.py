@@ -6,8 +6,9 @@ from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Max, Prefetch
+from django.db import IntegrityError
 
-from core.models import List, Task
+from core.models import List, Task, Board
 from list import serializers
 
 
@@ -43,22 +44,36 @@ class ListViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         list_instance = self.get_object()
-        new_position = request.data.get("position")
+        new_board = request.data.pop("board", list_instance.board)
+        new_position = request.data.pop("position")
 
-        if new_position is not None:
+        change_board = new_board != list_instance.board
+        change_position = new_position is not None and new_position != list_instance.position
+
+        if change_board:
             try:
-                new_position = int(new_position)  # Ensure it's an integer
-                if list_instance.position != new_position:
-                    # Check if a list exists at the new position within the same board
-                    target_list = List.objects.get(
-                        board=list_instance.board, position=new_position
-                    )
-                    # Swap positions
-                    List.swap_positions(list_instance, target_list)
-            except (ValueError, List.DoesNotExist):
-                # Handle invalid input or the case where no list exists with the new position
-                # You can return an appropriate response here if needed
-                return Response("Bad Request", status=status.HTTP_400_BAD_REQUEST)
+                max_position = List.objects.filter(board=new_board).aggregate(Max("position"))["position__max"]
+                max_position = (max_position or 0) + 1
+                new_board_instance = Board.objects.get(id=new_board)
+                List.swap_parent(list_instance, new_board_instance, max_position)
+            except ValueError:
+                return Response("Invalid value type", status=status.HTTP_400_BAD_REQUEST)
+            except IntegrityError:
+                return Response("Request did not end successfully", status=status.HTTP_409_CONFLICT)
+            except Board.DoesNotExist:
+                List.swap_parent(list_instance, new_parent=None, new_position=max_position)
+
+        if change_position:
+            try:
+                new_position = int(new_position)
+                target_list = List.objects.get(board=new_board, position=new_position)
+                List.swap_positions(list_instance, target_list)
+            except ValueError as e:
+                return Response(f"Invalid value type: {e}", status=status.HTTP_400_BAD_REQUEST)
+            except IntegrityError as e:
+                return Response(f"Request did not end successfully: {e}", status=status.HTTP_409_CONFLICT)
+            except Task.DoesNotExist as e:
+                return Response(f"Bad Request: {e}", status=status.HTTP_404_NOT_FOUND)
 
         return super().update(request, *args, **kwargs)
 
