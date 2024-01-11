@@ -4,14 +4,17 @@ Database models.
 import uuid
 import os
 from django.conf import settings
-from django.db import models, transaction
+from django.db import models, transaction, IntegrityError
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
+from position.position_exception import PositionException
 
 from colorfield.fields import ColorField
+from rest_framework import status
+from rest_framework.response import Response
 
 
 def user_image_file_path(instance, filename):
@@ -97,17 +100,16 @@ class PositionedModel(models.Model):
                     position__gt=instance1_position,
                     position__lt=instance2_position,
                 ).order_by('position')  # Sorting in ascending order
-
                 instances_between.update(position=models.F("position") - 1)
                 instance2.position = instance2_position - 1
             elif instance1_position > instance2_position:
                 # Shift positions of instances between instance2 and instance1 up by one
+                print("Shift positions of instances between instance2 and instance1 up by one")
                 instances_between = cls.objects.filter(
                     **{cls.parent_attribute: parent1},
                     position__lt=instance1_position,
                     position__gt=instance2_position,
                 ).order_by('-position')  # Sorting in descending order
-
                 instances_between.update(position=models.F("position") + 1)
                 instance2.position = instance2_position + 1
 

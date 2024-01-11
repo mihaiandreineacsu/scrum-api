@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'colorfield',
     'category',
     'list',
+    'position'
 ]
 
 MIDDLEWARE = [
