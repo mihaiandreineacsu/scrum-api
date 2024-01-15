@@ -6,7 +6,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Prefetch
 
-from core.models import Board ,List, Task
+from core.models import Board, List, Task
 from board import serializers
 
 

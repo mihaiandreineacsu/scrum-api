@@ -6,6 +6,7 @@ from rest_framework import viewsets, status
 from django.db.models import Max
 from django.db import IntegrityError
 
+
 class PositionViewSet(viewsets.ModelViewSet):
     """Abstract View for manage position APIs."""
 
@@ -36,8 +37,8 @@ class PositionViewSet(viewsets.ModelViewSet):
             raise PositionException("Invalid value type", status.HTTP_400_BAD_REQUEST, e)
         except IntegrityError as e:
             raise PositionException("Request did not end successfully", status.HTTP_409_CONFLICT, e)
-        except type(parent).DoesNotExist as e:
+        except type(parent).DoesNotExist:
             type(instance).swap_parent(instance=instance, new_parent=None, new_position=max_position)
         except type(instance).DoesNotExist as e:
-                raise PositionException("Bad Request", status.HTTP_404_NOT_FOUND, e)
+            raise PositionException("Bad Request", status.HTTP_404_NOT_FOUND, e)
         return super().update(request, *args, **kwargs)

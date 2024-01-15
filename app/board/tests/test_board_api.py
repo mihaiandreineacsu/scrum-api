@@ -25,7 +25,7 @@ def create_board(user, **params):
     }
     defaults.update(params)
 
-    board = Board.objects.create(user=user,**defaults)
+    board = Board.objects.create(user=user, **defaults)
     return board
 
 

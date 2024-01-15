@@ -10,9 +10,9 @@ from rest_framework.test import APIClient
 
 from core.models import Summary
 
-from summary.serializers import (
-    SummarySerializer
-)
+# from summary.serializers import (
+#     SummarySerializer
+# )
 
 
 SUMMARY_URL = reverse('summary:summary-list')

@@ -31,7 +31,7 @@ def create_list(user, **params):
     }
     defaults.update(params)
 
-    list = List.objects.create(user=user,**defaults)
+    list = List.objects.create(user=user, **defaults)
     return list
 
 

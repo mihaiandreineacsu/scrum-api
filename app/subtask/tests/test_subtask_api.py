@@ -19,9 +19,11 @@ from core import models
 
 SUBTASKS_URL = reverse('subtask:subtask-list')
 
-def create_category(user,name='Category', color='#FF0000'):
+
+def create_category(user, name='Category', color='#FF0000'):
     """Create and return a new category"""
-    return models.Category.objects.create(user=user,name=name, color=color)
+    return models.Category.objects.create(user=user, name=name, color=color)
+
 
 def create_task(user, **params):
     """Create and return a sample task."""
@@ -38,6 +40,7 @@ def create_task(user, **params):
     task = models.Task.objects.create(user=user, **defaults)
     return task
 
+
 def create_subtask(user, **params):
     """Create and return a sample subtask."""
     defaults = {
@@ -47,7 +50,7 @@ def create_subtask(user, **params):
     }
     defaults.update(params)
 
-    subtask = Subtask.objects.create(user=user,**defaults)
+    subtask = Subtask.objects.create(user=user, **defaults)
     return subtask
 
 

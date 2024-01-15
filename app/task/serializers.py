@@ -7,7 +7,6 @@ from rest_framework import serializers
 from core.models import Task, Contact, Subtask, Category, List
 from subtask.serializers import SubtaskSerializer
 from category.serializers import CategorySerializer
-from user.serializers import UserSerializer
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -63,7 +62,6 @@ class TaskSerializer(serializers.ModelSerializer):
         # ... any other fields you want to update directly on the Task
 
         # Update related Subtasks
-
         if subtasks_data is not None:
             if len(subtasks_data) == 0:
                 instance.subtasks.all().delete()

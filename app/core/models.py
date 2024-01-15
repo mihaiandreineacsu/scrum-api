@@ -4,17 +4,14 @@ Database models.
 import uuid
 import os
 from django.conf import settings
-from django.db import models, transaction, IntegrityError
+from django.db import models, transaction
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
-from position.position_exception import PositionException
 
 from colorfield.fields import ColorField
-from rest_framework import status
-from rest_framework.response import Response
 
 
 def user_image_file_path(instance, filename):
@@ -126,7 +123,6 @@ class PositionedModel(models.Model):
             setattr(instance, cls.parent_attribute, new_parent)
             instance.position = new_position
             instance.save()
-
 
     def __str__(self):
         return str(self.position)

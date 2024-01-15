@@ -3,14 +3,14 @@ Serializers for Board APIs
 """
 from rest_framework import serializers
 
-from core.models import Board, List
+from core.models import Board
 from list.serializers import ListSerializer
-from user.serializers import UserSerializer
 
 
 class BoardSerializer(serializers.ModelSerializer):
     """Serializer for boards."""
     lists = ListSerializer(many=True, read_only=True)
+
     class Meta:
         model = Board
         fields = ['id', 'created_at', 'updated_at', 'lists', 'title']

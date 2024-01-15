@@ -5,7 +5,6 @@ from django.contrib.auth import (
     get_user_model,
     authenticate,
 )
-from django.utils.translation import gettext as _
 from core.models import User
 
 from rest_framework import (
@@ -56,7 +55,6 @@ class AuthTokenSerializer(serializers.Serializer):
             password=password,
         )
         if not user:
-            # msg = _('Unable to authenticate with provided credentials.')
             raise serializers.ValidationError({'detail': ['Unable to authenticate with provided credentials.']}, code='authorization')
         attrs['user'] = user
         return attrs

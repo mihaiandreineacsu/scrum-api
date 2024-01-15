@@ -4,7 +4,7 @@ Tests for models.
 from datetime import date
 from unittest.mock import patch
 from django.test import TestCase
-from django.contrib.auth import get_user_model, get_user
+from django.contrib.auth import get_user_model
 
 from core import models
 
@@ -19,12 +19,12 @@ def create_superuser(email='user@example.com', password='testpass123'):
     return get_user_model().objects.create_superuser(email, password)
 
 
-def create_category(user,name='Category', color='#FF0000'):
+def create_category(user, name='Category', color='#FF0000'):
     """Create and return a new category"""
-    return models.Category.objects.create(user=user,name=name, color=color)
+    return models.Category.objects.create(user=user, name=name, color=color)
 
 
-def create_contact(user,email='contact@example.com', name='test', phone_number='01573333333'):
+def create_contact(user, email='contact@example.com', name='test', phone_number='01573333333'):
     """Create and return a new contact"""
     defaults = {
         'user': user,
@@ -50,6 +50,7 @@ def create_task(user, **params):
     task = models.Task.objects.create(user=user, **defaults)
     return task
 
+
 def create_subtask(user, **params):
     """Create and return a sample subtask"""
     defaults = {
@@ -68,8 +69,9 @@ def create_list(user, **params):
         'name': 'Some List  Name',
     }
     defaults.update(params)
-    list  = models.List.objects.create(user=user, **defaults)
+    list = models.List.objects.create(user=user, **defaults)
     return list
+
 
 class ModelTests(TestCase):
     """Test models."""

@@ -1,18 +1,16 @@
 """
 Views for the task APIs.
 """
-import json
 from position.views import PositionViewSet
 from position.position_exception import PositionException
-from rest_framework import viewsets, filters, status
+from rest_framework import filters
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Task, List
+from core.models import Task
 from task import serializers
-from django.db.models import Max, Min
-from django.db import IntegrityError
+from django.db.models import Max
 
 
 class TaskViewSet(PositionViewSet):
@@ -60,4 +58,5 @@ class TaskViewSet(PositionViewSet):
 
     def perform_create(self, serializer):
         """Create a new task."""
-        task = serializer.save(user=self.request.user)
+        # task = serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user)

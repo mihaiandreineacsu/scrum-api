@@ -11,5 +11,5 @@ class SummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Summary
-        fields = ['id',]
+        fields = ['id']
         read_only_fields = ['id']

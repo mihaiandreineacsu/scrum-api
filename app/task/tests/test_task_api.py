@@ -15,7 +15,6 @@ from task.serializers import (
 )
 
 from datetime import date
-from django.db import models
 
 
 TASKS_URL = reverse('task:task-list')
@@ -32,6 +31,7 @@ def create_subtask(user, **params):
     subtask = Subtask.objects.create(user=user, **defaults)
     return subtask
 
+
 def create_subtask_payload(**params):
     """Create and return a sample subtask"""
     defaults = {
@@ -40,6 +40,7 @@ def create_subtask_payload(**params):
     }
     defaults.update(params)
     return defaults
+
 
 def create_contact(user, **params):
     """Create and return a sample contact."""
@@ -123,7 +124,7 @@ class PrivateTaskAPITests(TestCase):
         """Test creating a task."""
         category = create_category(user=self.user)
         contact1 = create_contact(user=self.user)
-        contact2 = create_contact(user=self.user,name="Mihai", phone_number="015777777888", email="mihai@dev.com")
+        contact2 = create_contact(user=self.user, name="Mihai", phone_number="015777777888", email="mihai@dev.com")
         subtask1 = create_subtask_payload()
         subtask2 = create_subtask_payload(title="Do this")
         payload = {
@@ -201,7 +202,7 @@ class PrivateTaskAPITests(TestCase):
 
         category = create_category(user=self.user)
         contact1 = create_contact(user=self.user)
-        contact2 = create_contact(user=self.user,name="Mihai", phone_number="015777777888", email="mihai@dev.com")
+        contact2 = create_contact(user=self.user, name="Mihai", phone_number="015777777888", email="mihai@dev.com")
         subtask1 = create_subtask(user=self.user, task=task)
         subtask2 = create_subtask(user=self.user, title="Do this", task=task)
         payload = {
@@ -236,7 +237,9 @@ class PrivateTaskAPITests(TestCase):
 
         payload = {'user': new_user.id}
         url = detail_url(task.id)
-        res = self.client.patch(url, payload)
+
+        self.client.patch(url, payload)
+        # res = self.client.patch(url, payload)
         # it returns ok, but it was not updated
         # self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         task.refresh_from_db()

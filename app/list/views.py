@@ -3,14 +3,12 @@ Views for the list APIs.
 """
 from position.views import PositionViewSet
 from position.position_exception import PositionException
-from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Max, Prefetch
-from django.db import IntegrityError
 
-from core.models import List, Task, Board
+from core.models import List, Task
 from list import serializers
 
 
@@ -49,7 +47,6 @@ class ListViewSet(PositionViewSet):
             return super().update(request, *args, **kwargs)
         except PositionException as e:
             return Response(data={"message": str(e), "status": e.status_code, "error": str(e.error)})
-
 
     def perform_create(self, serializer):
         """Create a new list."""
