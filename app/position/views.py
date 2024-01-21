@@ -17,16 +17,18 @@ class PositionViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         new_position = request.data.pop("position", None)
         parent = getattr(instance, instance.parent_attribute)
-        new_parent = request.data.pop(instance.parent_attribute, parent.id)
+        new_parent = request.data.pop(instance.parent_attribute, (parent.id if parent is not None else None))
 
-        change_parent = new_parent != parent.id
+        change_parent = new_parent != (parent.id if parent is not None else None)
         change_position = new_position is not None and new_position != instance.position
 
         try:
             if change_parent:
+                # Using _meta to get the related model for instance parent_attribute
+                parent_model = instance._meta.get_field(instance.parent_attribute).related_model
                 max_position = type(instance).objects.filter(**{instance.parent_attribute: new_parent}).aggregate(Max("position"))["position__max"]
                 max_position = (max_position or 0) + 1
-                new_parent_instance = type(parent).objects.get(id=new_parent)
+                new_parent_instance = parent_model.objects.get(id=new_parent)
                 type(instance).swap_parent(instance=instance, new_parent=new_parent_instance, new_position=max_position)
 
             if change_position:
@@ -37,7 +39,7 @@ class PositionViewSet(viewsets.ModelViewSet):
             raise PositionException("Invalid value type", status.HTTP_400_BAD_REQUEST, e)
         except IntegrityError as e:
             raise PositionException("Request did not end successfully", status.HTTP_409_CONFLICT, e)
-        except type(parent).DoesNotExist:
+        except parent_model.DoesNotExist:
             type(instance).swap_parent(instance=instance, new_parent=None, new_position=max_position)
         except type(instance).DoesNotExist as e:
             raise PositionException("Bad Request", status.HTTP_404_NOT_FOUND, e)
