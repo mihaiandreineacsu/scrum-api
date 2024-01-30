@@ -152,5 +152,5 @@ class SummaryAdmin(admin.ModelAdmin):
     list_filter = ["created_at", "updated_at", "user"]
     search_fields = ["user"]
 
-
-admin.site.register(models.Summary, SummaryAdmin)
+# TODO
+# admin.site.register(models.Summary, SummaryAdmin)

@@ -294,15 +294,3 @@ class Subtask(TimeStampedModel):
 
     def __str__(self):
         return self.title
-
-
-class Summary(TimeStampedModel):
-    """Summary object"""
-
-    class Meta:
-        verbose_name_plural = "Summaries"
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )

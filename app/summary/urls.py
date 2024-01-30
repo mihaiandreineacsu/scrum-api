@@ -3,18 +3,18 @@ URL mappings for the summary app.
 """
 from django.urls import (
     path,
-    include,
+    # include,
 )
 
-from rest_framework.routers import DefaultRouter
+# from rest_framework.routers import DefaultRouter
 
 from summary import views
 
-router = DefaultRouter()
-router.register('summary', views.SummaryViewSet)
+# router = DefaultRouter()
+# router.register('summary', views.SummaryView)
 
 app_name = 'summary'
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', views.SummaryView.as_view(), name='summary'),
 ]
