@@ -17,10 +17,11 @@ class SummaryView(APIView):
     def get(self, request, format=None):
         """Retrieve summary for authenticated user."""
         user = request.user
-        # Count tasks in each list and include list names
-        tasks_in_lists = Task.objects.filter(user=user).exclude(list__isnull=True).values('list__name').annotate(count=Count('id')).order_by('list__name')
-        # Count tasks for each priority and include priority names
-        # tasks_by_priority = Task.objects.filter(user=user).values('priority').annotate(count=Count('id')).order_by('priority')
+        # Count tasks in each list and include list names and positions
+        tasks_in_lists = Task.objects.filter(user=user).exclude(list__isnull=True) \
+            .values('list__board__title', 'list__name', 'list__position') \
+            .annotate(count=Count('id')) \
+            .order_by('list__board__title', 'list__position') # Adjust ordering as needed
 
         # Count tasks for each priority and get the latest due date for each
         tasks_by_priority = Task.objects.filter(user=user).values('priority').annotate(
@@ -28,12 +29,18 @@ class SummaryView(APIView):
             latest_due_date=Max('due_date')
         ).order_by('priority')
 
+        # Count tasks for each category
+        tasks_by_category = Task.objects.filter(user=user).values('category__name', 'category__color').annotate(
+            count=Count('id'),
+        ).order_by('category__name')
+
         # Count tasks where list is None
-        tasks_no_list_count = Task.objects.filter(user=user, list__isnull=True).count()
+        tasks_in_backlog = Task.objects.filter(user=user, list__isnull=True).count()
 
         # Construct response
         return Response({
             'tasks_in_lists': list(tasks_in_lists),  # Convert to list for JSON serialization
             'tasks_by_priority': list(tasks_by_priority),  # Convert to list
-            'tasks_no_list_count': tasks_no_list_count,
+            'tasks_in_backlog': tasks_in_backlog,
+            'tasks_by_category': list(tasks_by_category)
         })
