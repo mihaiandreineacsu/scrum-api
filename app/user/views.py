@@ -61,6 +61,8 @@ class UserUploadImageView(viewsets.ModelViewSet):
     @action(methods=["POST"], detail=True, url_path="upload-image")
     def upload_image(self, request, pk=None):
         """Upload an image to user."""
+        print("Absolute URI: %s", request.build_absolute_uri())
+        print("Host: %s", request.get_host())
         user = self.get_object()
         serializer = self.get_serializer(user, data=request.data)
 
