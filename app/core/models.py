@@ -256,7 +256,7 @@ class Task(TimeStampedModel, PositionedModel):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False
     )
     title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, blank=True
     )

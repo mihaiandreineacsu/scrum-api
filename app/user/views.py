@@ -44,6 +44,12 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
         """Return the serializer class for request."""
         return self.serializer_class
 
+    def delete(self, request, *args, **kwargs):
+        """Handle user deletion."""
+        user = self.get_object()
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class UserUploadImageView(viewsets.ModelViewSet):
     serializer_class = UserImageSerializer

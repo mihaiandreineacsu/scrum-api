@@ -1,4 +1,4 @@
-#  Docker Compose Files consist of services needed by application.
+# Docker Compose Files consist of services needed by application.
 # Docker Compose version syntax used
 version: "3.9"
 
@@ -10,7 +10,7 @@ services:
         - DEV=true # Configure docker-compose on build to install Dev Requirements
     ports:
       - "8000:8000" # maps port 8000 from local machine to port 8000 inside Docker container
-      - 3000:3000
+      - "3000:3000"
     volumes:
       - ./app:/app # maps app directory from local machine to /app  inside Docker container
       - dev-static-data:/vol/web
@@ -23,6 +23,8 @@ services:
       - DB_NAME=devdb
       - DB_PASS=changeme
       - DB_USER=devuser
+      - EMAIL_HOST_USER=mailuser
+      - EMAIL_HOST_PASSWORD=mailpassword
     depends_on:
       - db
 

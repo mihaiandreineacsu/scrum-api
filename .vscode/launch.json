@@ -3,10 +3,10 @@
   "configurations": [
     {
       "name": "Run Django",
-      "type": "python",
+      "type": "debugpy",
       "request": "attach",
       "connect": {
-        "host": "127.0.0.1",
+        "host": "0.0.0.0",
         "port": 3000
       },
       "pathMappings": [
@@ -14,7 +14,9 @@
           "localRoot": "${workspaceFolder}/app",
           "remoteRoot": "/app"
         }
-      ]
+      ],
+      "justMyCode": false,
+      "django": true,
     }
   ]
 }

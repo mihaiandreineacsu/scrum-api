@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'category',
     'list',
     'position',
-    'corsheaders'
+    'corsheaders',
+    'django_rest_passwordreset'
 ]
 
 MIDDLEWARE = [
@@ -165,3 +166,18 @@ SPECTACULAR_SETTINGS = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
 ]
+
+CORS_ALLOW_CREDENTIALS = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.1und1.de'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'noreply.join@e-mail.de'
+EMAIL_HOST_PASSWORD = 'ptv3FV*xUcVBuMuQ=Cek'
+EMAIL_USE_TLS = True
+# EMAIL_USE_SSL = False  # Use this for SSL (uncomment if needed, and adjust port)
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DJANGO_REST_MULTITOKENAUTH_RESET_TOKEN_EXPIRY_TIME = 24 # Default
+DJANGO_REST_PASSWORDRESET_NO_INFORMATION_LEAKAGE = False # Default
+DJANGO_REST_MULTITOKENAUTH_REQUIRE_USABLE_PASSWORD = True # Default
+DJANGO_REST_LOOKUP_FIELD = 'email' # Default
