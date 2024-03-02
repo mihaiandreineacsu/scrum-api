@@ -170,10 +170,10 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.1und1.de'
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'noreply.join@e-mail.de'
-EMAIL_HOST_PASSWORD = 'ptv3FV*xUcVBuMuQ=Cek'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 # EMAIL_USE_SSL = False  # Use this for SSL (uncomment if needed, and adjust port)
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
