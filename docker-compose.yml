@@ -4,6 +4,8 @@ version: "3.9"
 
 services:
   app:
+    env_file:
+        - .env
     build:
       context: . # This means build our docker file in current directory
       args:
@@ -24,7 +26,7 @@ services:
       - DB_PASS=changeme
       - DB_USER=devuser
       - EMAIL_HOST_USER=noreply.join@e-mail.de
-      - EMAIL_HOST_PASSWORD=ptv3FV*xUcVBuMuQ=Cek
+      - EMAIL_HOST_PASSWORD
       - EMAIL_HOST=smtp.1und1.de
     depends_on:
       - db
