@@ -14,4 +14,5 @@ urlpatterns = [
     path('me/', views.ManageUserView.as_view(), name='me'),
     path('user-upload-image/', views.UserUploadImageView.as_view({'post': 'upload_image'}), name='user-upload-image'),
     path('password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    path('create-guest/', views.CreateGuestUserView.as_view(), name='create-guest'),
 ]

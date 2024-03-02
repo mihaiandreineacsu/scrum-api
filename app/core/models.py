@@ -12,6 +12,7 @@ from django.contrib.auth.models import (
 )
 
 from colorfield.fields import ColorField
+from django.utils.crypto import get_random_string
 
 
 def user_image_file_path(instance, filename):
@@ -163,6 +164,17 @@ class UserManager(BaseUserManager):
 
         return user
 
+    def create_guest_user(self, **extra_fields):
+        """Create and return a new guest user with a random username."""
+        random_identifier = get_random_string(8)  # Generates a random username.
+        dummy_email = f'guest_{random_identifier}@guest.com'
+        user = self.model(email=dummy_email, **extra_fields)
+        user.name = f'Guest{random_identifier}'
+        user.set_unusable_password()
+        user.is_guest = True
+        user.save(using=self._db)
+        return user
+
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     """User in the system."""
@@ -172,7 +184,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     image = models.ImageField(null=True, upload_to=user_image_file_path)
-
+    is_guest = models.BooleanField(default=False)
     objects = UserManager()
 
     USERNAME_FIELD = "email"

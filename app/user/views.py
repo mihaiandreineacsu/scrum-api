@@ -10,16 +10,27 @@ from rest_framework import (
     viewsets,
     status,
 )
-from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.views import ObtainAuthToken, APIView
 from rest_framework.settings import api_settings
+from rest_framework.authtoken.models import Token
 
 from user.serializers import UserSerializer, AuthTokenSerializer, UserImageSerializer
+from django.contrib.auth import get_user_model
+from user.permissions import IsNotGuestUser
+
 
 
 class CreateUserView(generics.CreateAPIView):
     """Create a new user in the system."""
 
     serializer_class = UserSerializer
+
+
+class CreateGuestUserView(APIView):
+    def post(self, request, *args, **kwargs):
+        user = get_user_model().objects.create_guest_user()
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({'token': token.key}, status=status.HTTP_201_CREATED)
 
 
 class CreateTokenView(ObtainAuthToken):
@@ -34,7 +45,7 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
 
     serializer_class = UserSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsNotGuestUser]
 
     def get_object(self):
         """Retrieve and return the authenticated user."""
@@ -54,7 +65,7 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
 class UserUploadImageView(viewsets.ModelViewSet):
     serializer_class = UserImageSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsNotGuestUser]
 
     def get_object(self):
         """Retrieve and return the authenticated user."""
