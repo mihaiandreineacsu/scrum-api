@@ -1,4 +1,5 @@
-FROM python:3.9-alpine3.13
+FROM python:3.9-slim
+# FROM python:3.9-alpine3.13
 # What is defined in the Dockerfile ?
 # Operation system level dependencies.
 # The Dockerfile is used to build our image,
@@ -19,21 +20,25 @@ ARG DEV=false
 # for each RUN in Dockerfile a image layer is created,
 #  avoid this to keep images lightweight as possible by breaking the commands in multiple line
 #  by using "&& \" syntax
+# Update and install dependencies using apt-get for Debian/Ubuntu
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
-    apk add --update --no-cache postgresql-client jpeg-dev && \
-    apk add --update --no-cache --virtual .tmp-build-deps \
-        build-base postgresql-dev musl-dev zlib zlib-dev && \
+    apt-get update && \
+    apt-get install -y postgresql-client libjpeg-dev && \
+    apt-get install -y --no-install-recommends build-essential libpq-dev zlib1g-dev && \
     /py/bin/pip install -r /tmp/requirements.txt && \
-    if [ $DEV = "true" ]; \
-        then /py/bin/pip install -r /tmp/requirements-dev.txt ; \
+    if [ $DEV = "true" ]; then \
+        /py/bin/pip install -r /tmp/requirements-dev.txt ; \
     fi && \
-    rm -rf /tmp && \
-    apk del .tmp-build-deps && \
-    adduser \
-        --disabled-password \
-        --no-create-home \
-        django-user && \
+    apt-get remove -y build-essential libpq-dev zlib1g-dev && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* && \
+    useradd -m django-user && \
+    if [ "$DEV" = "true" ]; then \
+        mkdir -p /home/django-user && \
+        chown django-user:django-user /home/django-user; \
+    fi && \
     mkdir -p /vol/web/media && \
     mkdir -p /vol/web/static && \
     chown -R django-user:django-user /vol && \
