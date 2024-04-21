@@ -27,6 +27,8 @@ class CreateUserView(generics.CreateAPIView):
 
 
 class CreateGuestUserView(APIView):
+    """Create a new quest user in the system."""
+
     def post(self, request, *args, **kwargs):
         user = get_user_model().objects.create_guest_user()
         token, created = Token.objects.get_or_create(user=user)
