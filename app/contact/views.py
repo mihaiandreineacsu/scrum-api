@@ -1,9 +1,10 @@
 """
 Views for the contact APIs.
 """
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from core.models import Contact
 from contact import serializers
@@ -32,3 +33,14 @@ class ContactViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Create a new contact."""
         serializer.save(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        """Create a new contact with unique email for the user."""
+        user = self.request.user
+        email = request.data.get('email')
+        if Contact.objects.filter(user=user, email=email).exists():
+            return Response(
+                {'detail': 'A contact with this email already exists for this user.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().create(request, *args, **kwargs)
