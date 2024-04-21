@@ -11,6 +11,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 
+from core.utils import generate_name
 from colorfield.fields import ColorField
 from django.utils.crypto import get_random_string
 
@@ -166,14 +167,21 @@ class UserManager(BaseUserManager):
 
     def create_guest_user(self, **extra_fields):
         """Create and return a new guest user with a random username."""
-        random_identifier = get_random_string(8)  # Generates a random username.
-        dummy_email = f'guest_{random_identifier}@guest.com'
+        random_identifier = generate_name()
+        dummy_email = f'{self.normalize_email_identifier(random_identifier)}@guest.com'
         user = self.model(email=dummy_email, **extra_fields)
-        user.name = f'Guest{random_identifier}'
+        user.name = f'{random_identifier}'
         user.set_unusable_password()
         user.is_guest = True
         user.save(using=self._db)
         return user
+
+    def normalize_email_identifier(self, identifier):
+        # Convert to lowercase to normalize
+        normalized = identifier.lower()
+        # Replace any disallowed characters (if there were any, depends on generation logic)
+        normalized = normalized.replace(' ', '_')
+        return normalized
 
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
@@ -234,9 +242,14 @@ class Contact(TimeStampedModel):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    email = models.EmailField(max_length=255, unique=True)
+    email = models.EmailField(max_length=255)
     name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=255)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'email'], name='unique_user_email')
+        ]
 
     def __str__(self):
         return self.name
