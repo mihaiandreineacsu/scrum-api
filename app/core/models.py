@@ -242,13 +242,17 @@ class Contact(TimeStampedModel):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    email = models.EmailField(max_length=255)
-    name = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=255, default="Anonymous")
+    phone_number = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['user', 'email'], name='unique_user_email')
+            models.UniqueConstraint(
+                fields=['user', 'email'],
+                name='unique_user_email',
+                condition=models.Q(email__isnull=False)  # Ensure the constraint only applies when email is not NULL
+            )
         ]
 
     def __str__(self):
