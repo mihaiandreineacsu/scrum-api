@@ -1,6 +1,7 @@
 """
 Tests for list APIs.
 """
+import json
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -99,16 +100,18 @@ class PrivateListAPITests(TestCase):
 
     def test_create_list(self):
         """Test creating a list."""
-        payload = {
-            'name': 'New List',
-        }
-        res = self.client.post(LISTS_URL, payload)
+        board = create_board(self.user)
+        self.assertIsNotNone(board.id, "Board creation failed")
 
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        list = List.objects.get(id=res.data['id'])
-        for k, v in payload.items():
-            self.assertEqual(getattr(list, k), v)
-        self.assertEqual(list.user, self.user)
+        payload = {
+            "name": "New List",
+            "board": board.id
+        }
+
+        res = self.client.post(LISTS_URL, json.dumps(payload), content_type='application/json')
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.data.get('name'), 'New List')
+        self.assertEqual(res.data.get('board'), board.id)
 
     def test_partial_update(self):
         """Test partial update if a list."""
@@ -119,7 +122,7 @@ class PrivateListAPITests(TestCase):
 
         payload = {'name': 'List Title Updated'}
         url = detail_url(list.id)
-        res = self.client.patch(url, payload)
+        res = self.client.patch(url, json.dumps(payload), content_type='application/json')
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         list.refresh_from_db()
@@ -138,7 +141,7 @@ class PrivateListAPITests(TestCase):
             'board': board.id
         }
         url = detail_url(list.id)
-        res = self.client.put(url, payload)
+        res = self.client.put(url, json.dumps(payload), content_type='application/json')
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         list.refresh_from_db()
@@ -155,7 +158,7 @@ class PrivateListAPITests(TestCase):
 
         payload = {'user': new_user.id}
         url = detail_url(list.id)
-        self.client.patch(url, payload)
+        self.client.patch(url, payload, content_type='application/json')
 
         list.refresh_from_db()
         self.assertEqual(list.user, self.user)

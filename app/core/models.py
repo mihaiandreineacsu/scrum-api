@@ -10,10 +10,8 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-
 from core.utils import generate_name
 from colorfield.fields import ColorField
-from django.utils.crypto import get_random_string
 
 
 def user_image_file_path(instance, filename):
@@ -103,7 +101,6 @@ class PositionedModel(models.Model):
                 instance2.position = instance2_position - 1
             elif instance1_position > instance2_position:
                 # Shift positions of instances between instance2 and instance1 up by one
-                print("Shift positions of instances between instance2 and instance1 up by one")
                 instances_between = cls.objects.filter(
                     **{cls.parent_attribute: parent1},
                     position__lt=instance1_position,

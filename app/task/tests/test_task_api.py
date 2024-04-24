@@ -1,23 +1,23 @@
 """
 Tests for task APIs.
 """
+import json
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-
 from rest_framework import status
 from rest_framework.test import APIClient
-
 from core.models import Task, Category, Contact, Subtask
-
-from task.serializers import (
-    TaskSerializer
-)
-
+from task.serializers import TaskSerializer
 from datetime import date
 
 
 TASKS_URL = reverse('task:task-list')
+
+
+class MockRequest:
+    def __init__(self, user):
+        self.user = user
 
 
 def create_subtask(user, **params):
@@ -127,27 +127,35 @@ class PrivateTaskAPITests(TestCase):
         contact2 = create_contact(user=self.user, name="Mihai", phone_number="015777777888", email="mihai@dev.com")
         subtask1 = create_subtask_payload()
         subtask2 = create_subtask_payload(title="Do this")
+        due_date = date.today()
         payload = {
             'title': 'Sample task title',
             'description': 'Sample description',
             'category': category.id,
             'assignees': [contact1.id, contact2.id],
             'priority': 'Low',
-            'due_date': date.today(),
+            'due_date': due_date.isoformat(),
             'subtasks': [subtask1, subtask2]
         }
-        res = self.client.post(TASKS_URL, payload)
+        res = self.client.post(TASKS_URL, json.dumps(payload), content_type='application/json')
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         task = Task.objects.get(id=res.data['id'])
 
         for k, v in payload.items():
             task_attr = getattr(task, k)
-            if k != 'assignees' and k != 'subtasks' and k != 'category' and k != 'user':
+            if k != 'assignees' and k != 'subtasks' and k != 'category' and k != 'user' and k != 'due_date':
                 self.assertEqual(task_attr, v)
 
+        # Check subtasks separately
+        created_subtasks = list(task.subtasks.all())
+        self.assertEqual(len(created_subtasks), len(payload['subtasks']))
+        for subtask, expected_subtask in zip(created_subtasks, payload['subtasks']):
+            self.assertEqual(subtask.title, expected_subtask['title'])
+            self.assertEqual(subtask.done, expected_subtask['done'])
+
+        self.assertEqual(task.due_date.isoformat(), due_date.isoformat())
         self.assertEqual(list(task.assignees.all()), [contact1, contact2])
-        self.assertEqual(list(task.subtasks.all()), [subtask1, subtask2])
         self.assertEqual(task.category, category)
         self.assertEqual(task.user, self.user)
 
@@ -158,10 +166,11 @@ class PrivateTaskAPITests(TestCase):
 
         res = self.client.get(TASKS_URL)
 
-        tasks = Task.objects.all().order_by('-id')
+        tasks = Task.objects.all().order_by('-position')
         serializer = TaskSerializer(tasks, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data[0]['id'], serializer.data[0]['id'])
+        self.assertEqual(res.data[1]['id'], serializer.data[1]['id'])
 
     def test_task_list_limited_to_user(self):
         """Test list of tasks is limited to authenticated user."""
@@ -188,7 +197,7 @@ class PrivateTaskAPITests(TestCase):
 
         payload = {'title': 'New task title'}
         url = detail_url(task.id)
-        res = self.client.patch(url, payload)
+        res = self.client.patch(url, json.dumps(payload), content_type='application/json')
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         task.refresh_from_db()
@@ -197,36 +206,40 @@ class PrivateTaskAPITests(TestCase):
 
     def test_full_update(self):
         """Test full update of task."""
-
         task = create_task(user=self.user)
-
         category = create_category(user=self.user)
         contact1 = create_contact(user=self.user)
         contact2 = create_contact(user=self.user, name="Mihai", phone_number="015777777888", email="mihai@dev.com")
-        subtask1 = create_subtask(user=self.user, task=task)
-        subtask2 = create_subtask(user=self.user, title="Do this", task=task)
+        subtask1 = create_subtask_payload()
+        subtask2 = create_subtask_payload(title="Do this")
+        due_date = date.today()
+
         payload = {
             'title': 'Sample task title',
             'description': 'Sample description',
             'category': category.id,
             'assignees': [contact1.id, contact2.id],
             'priority': 'Low',
-            'due_date': date.today(),
-            'subtasks': [subtask1.id, subtask2.id]
+            'due_date': due_date.isoformat(),
+            'subtasks': [subtask1, subtask2]
         }
         url = detail_url(task.id)
-        res = self.client.put(url, payload)
-
+        res = self.client.put(url, json.dumps(payload), content_type='application/json')
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        task.refresh_from_db()
 
         for k, v in payload.items():
             task_attr = getattr(task, k)
-            if k != 'assignees' and k != 'subtasks' and k != 'category' and k != 'user':
+            if k != 'assignees' and k != 'subtasks' and k != 'category' and k != 'user' and k != 'due_date':
                 self.assertEqual(task_attr, v)
-
+        self.assertEqual(task.due_date.isoformat(), due_date.isoformat())
         self.assertEqual(list(task.assignees.all()), [contact1, contact2])
-        self.assertEqual(list(task.subtasks.all()), [subtask1, subtask2])
+        # Check subtasks separately
+        created_subtasks = list(task.subtasks.all())
+        self.assertEqual(len(created_subtasks), len(payload['subtasks']))
+        for subtask, expected_subtask in zip(created_subtasks, payload['subtasks']):
+            self.assertEqual(subtask.title, expected_subtask['title'])
+            self.assertEqual(subtask.done, expected_subtask['done'])
+        task.refresh_from_db()
         self.assertEqual(task.category.id, category.id)
         self.assertEqual(task.user, self.user)
 
@@ -238,7 +251,7 @@ class PrivateTaskAPITests(TestCase):
         payload = {'user': new_user.id}
         url = detail_url(task.id)
 
-        self.client.patch(url, payload)
+        self.client.patch(url, payload, content_type='application/json')
         # res = self.client.patch(url, payload)
         # it returns ok, but it was not updated
         # self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

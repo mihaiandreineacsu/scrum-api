@@ -28,5 +28,5 @@ class SubtaskViewSet(viewsets.ModelViewSet):
         return self.serializer_class
 
     def perform_create(self, serializer):
-        """Create a new task."""
+        """Create a new subtask."""
         serializer.save(user=self.request.user)

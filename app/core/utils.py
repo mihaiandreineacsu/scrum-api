@@ -31,6 +31,7 @@ OPTIONS = [
     Pathfinder.Tengu, Pathfinder.Tian, Pathfinder.Vanara, Pathfinder.Vishkanya,
 ]
 
+
 def generate_name():
     option = random.choice(OPTIONS)
     return option.generate()

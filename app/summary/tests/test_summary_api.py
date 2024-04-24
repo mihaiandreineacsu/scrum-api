@@ -8,25 +8,14 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Summary
+# from core.models import Summary
 
 # from summary.serializers import (
 #     SummarySerializer
 # )
 
 
-SUMMARY_URL = reverse('summary:summary-list')
-
-
-def create_summary(user, **params):
-    """Create and return a sample summary."""
-    defaults = {
-        # TODO
-    }
-    defaults.update(params)
-
-    summary = Summary.objects.create(**defaults)
-    return summary
+SUMMARY_URL = reverse('summary:summary')
 
 
 def detail_url(summary_id):

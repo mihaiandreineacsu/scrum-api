@@ -15,6 +15,7 @@ class PositionViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
+
         new_position = request.data.pop("position", None)
         parent = getattr(instance, instance.parent_attribute)
         new_parent = request.data.pop(instance.parent_attribute, (parent.id if parent is not None else None))

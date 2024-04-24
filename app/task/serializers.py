@@ -54,38 +54,40 @@ class TaskSerializer(serializers.ModelSerializer):
         instance.due_date = validated_data.get("due_date", instance.due_date)
         instance.priority = validated_data.get("priority", instance.priority)
         instance.list = validated_data.get("list", instance.list)
+
         assignees_data = validated_data.pop("assignees", None)
         subtasks_data = validated_data.pop("subtasks", None)
 
-        if assignees_data:
+        if assignees_data is not None:
             instance.assignees.set(assignees_data)
-        # ... any other fields you want to update directly on the Task
 
-        # Update related Subtasks
-        if subtasks_data is not None:
-            if len(subtasks_data) == 0:
-                instance.subtasks.all().delete()
-            else:
-                for subtask_data in subtasks_data:
-                    subtask_id = subtask_data.get("id", None)
-                    if subtask_id:
-                        try:
-                            subtask = instance.subtasks.get(id=subtask_id)
-                            for attr, value in subtask_data.items():
-                                setattr(subtask, attr, value)
-                            subtask.save()
-                        except Subtask.DoesNotExist:
-                            raise serializers.ValidationError(
-                                "Subtask with id %s does not exist" % subtask_id
-                            )
-                    else:
-                        # If the subtask does not exist, create it
-                        Subtask.objects.create(
-                            user=instance.user, task=instance, **subtask_data
-                        )
+        self.update_subtasks(instance, subtasks_data)
 
         instance.save()
         return instance
+
+    def update_subtasks(self, instance, subtasks_data):
+        if subtasks_data is None:
+            return
+
+        subtask_ids = {data.get('id') for data in subtasks_data if data.get('id') is not None}
+        existing_subtasks = {subtask.id: subtask for subtask in instance.subtasks.all()}
+
+        # Delete subtasks not included in the update
+        subtasks_to_delete = existing_subtasks.keys() - subtask_ids
+        if subtasks_to_delete:
+            instance.subtasks.filter(id__in=subtasks_to_delete).delete()
+
+        # Update existing subtasks and create new ones
+        for subtask_data in subtasks_data:
+            subtask_id = subtask_data.get("id", None)
+            if subtask_id and subtask_id in existing_subtasks:
+                subtask = existing_subtasks[subtask_id]
+                for attr, value in subtask_data.items():
+                    setattr(subtask, attr, value)
+                subtask.save()
+            elif not subtask_id:
+                Subtask.objects.create(user=instance.user, task=instance, **subtask_data)
 
     def to_representation(self, instance):
         self.fields["category"] = CategorySerializer(read_only=True)

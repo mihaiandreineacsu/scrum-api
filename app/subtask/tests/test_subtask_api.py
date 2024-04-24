@@ -1,6 +1,7 @@
 """
 Tests for subtask APIs.
 """
+import json
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -122,14 +123,18 @@ class PrivateSubtaskAPITests(TestCase):
         payload = {
             'title': 'New Subtask',
             'done': False,
-            'task': task
+            'task': task.id,
+            'user': self.user.id
         }
         res = self.client.post(SUBTASKS_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         subtask = Subtask.objects.get(id=res.data['id'])
         for k, v in payload.items():
-            self.assertEqual(getattr(subtask, k), v)
+            if k == 'task' or k == 'user':  # Special handling for the ForeignKey field
+                self.assertEqual(getattr(subtask, k).id, v)
+            else:
+                self.assertEqual(getattr(subtask, k), v)
         self.assertEqual(subtask.user, self.user)
 
     def test_partial_update(self):
@@ -150,21 +155,24 @@ class PrivateSubtaskAPITests(TestCase):
 
     def test_full_update(self):
         """Test full update of subtask."""
+        task = create_task(user=self.user)
         subtask = create_subtask(
             user=self.user,
         )
 
         payload = {
             'title': 'Subtask full update',
-            'done': True
+            'done': True,
+            'task': task.id
         }
         url = detail_url(subtask.id)
-        res = self.client.put(url, payload)
-
+        res = self.client.put(url, json.dumps(payload), content_type='application/json')
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         subtask.refresh_from_db()
         for k, v in payload.items():
-            self.assertEqual(getattr(subtask, k), v)
+            if k != 'task':
+                self.assertEqual(getattr(subtask, k), v)
+        self.assertEqual(subtask.task.id, task.id)
         self.assertEqual(subtask.user, self.user)
 
     def test_update_user_returns_error(self):

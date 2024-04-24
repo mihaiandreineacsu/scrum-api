@@ -24,7 +24,7 @@ class SummaryView(APIView):
             .annotate(
                 count=Count('id'),
                 latest_due_date=Max('due_date')
-            ).order_by('list__board__title', 'list__position')
+        ).order_by('list__board__title', 'list__position')
 
         # Count tasks for each priority and get the latest due date for each
         tasks_by_priority = Task.objects.filter(user=user) \
@@ -32,7 +32,7 @@ class SummaryView(APIView):
             .annotate(
                 count=Count('id'),
                 latest_due_date=Max('due_date')
-            ).order_by('priority')
+        ).order_by('priority')
 
         # Count tasks for each category and get the latest due date for each
         tasks_by_category = Task.objects.filter(user=user) \
@@ -40,16 +40,16 @@ class SummaryView(APIView):
             .annotate(
                 count=Count('id'),
                 latest_due_date=Max('due_date')
-            ).order_by('category__name')
+        ).order_by('category__name')
 
         # Modify the tasks_in_backlog query to include latest_due_date
         tasks_in_backlog = Task.objects.filter(user=user, list__isnull=True) \
             .aggregate(
                 count=Count('id'),
                 latest_due_date=Max('due_date')
-            )
+        )
         # Upcoming deadline Task
-        most_recent_deadline = Task.objects.filter(user=user).order_by('-due_date').first()
+        # most_recent_deadline = Task.objects.filter(user=user).order_by('-due_date').first()
 
         # Construct response
         return Response({
