@@ -78,6 +78,16 @@ class PrivateContactAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
+    def test_retrieve_contact(self):
+        """Test retrieving a list of contacts."""
+        contact = create_contact(user=self.user)
+        url = detail_url(contact.id)
+        res = self.client.get(url)
+
+        serializer = ContactSerializer(contact)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
     def test_contact_list_limited_to_user(self):
         """Test list of contacts is limited to authenticated user."""
         other_user = get_user_model().objects.create_user(
