@@ -92,7 +92,6 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 # Determine if SQLite should be used based on the environment variable
 USE_SQLITE = os.environ.get('USE_SQLITE', 'False').lower() == 'true'
-print(USE_SQLITE)
 if USE_SQLITE:
     DATABASES = {
         'default': {
