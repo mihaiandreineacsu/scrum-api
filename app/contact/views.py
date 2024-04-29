@@ -35,12 +35,53 @@ class ContactViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        """Create a new contact with unique email for the user."""
+        """Create a new contact with unique email/phone_number for the user."""
         user = self.request.user
         email = request.data.get('email')
-        if Contact.objects.filter(user=user, email=email).exists():
+        name = request.data.get('name')
+        phone_number = request.data.get('phone_number')
+
+        if not any([email, name, phone_number]):
+            return Response(
+                {'detail': 'At least one of email, name, or phone number must be provided.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if email and Contact.objects.filter(user=user, email=email).exists():
             return Response(
                 {'detail': 'A contact with this email already exists for this user.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        if phone_number and Contact.objects.filter(user=user, phone_number=phone_number).exists():
+            return Response(
+                {'detail': 'A contact with this phone number already exists for this user.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Update a new contact with unique email/phone_number for the user."""
+        user = self.request.user
+        email = request.data.get('email')
+        name = request.data.get('name')
+        phone_number = request.data.get('phone_number')
+
+        if not any([email, name, phone_number]):
+            return Response(
+                {'detail': 'At least one of email, name, or phone number must be provided.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if email and Contact.objects.filter(user=user, email=email).exists():
+            return Response(
+                {'detail': 'A contact with this email already exists for this user.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if phone_number and Contact.objects.filter(user=user, phone_number=phone_number).exists():
+            return Response(
+                {'detail': 'A contact with this phone number already exists for this user.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().update(request, *args, **kwargs)

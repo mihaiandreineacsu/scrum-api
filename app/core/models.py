@@ -240,7 +240,7 @@ class Contact(TimeStampedModel):
         on_delete=models.CASCADE,
     )
     email = models.EmailField(max_length=255, null=True, blank=True)
-    name = models.CharField(max_length=255, default="Anonymous")
+    name = models.CharField(max_length=255, default="Anonymous", null=True, blank=True)
     phone_number = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
@@ -248,12 +248,17 @@ class Contact(TimeStampedModel):
             models.UniqueConstraint(
                 fields=['user', 'email'],
                 name='unique_user_email',
-                condition=models.Q(email__isnull=False)  # Ensure the constraint only applies when email is not NULL
+                condition=models.Q(email__isnull=False) & ~models.Q(email__exact='')  # Ensure the constraint only applies when email is not NULL
+            ),
+            models.UniqueConstraint(
+                fields=['user', 'phone_number'],
+                name='unique_user_phone',
+                condition=models.Q(phone_number__isnull=False) & ~models.Q(phone_number__exact='')
             )
         ]
 
     def __str__(self):
-        return self.name
+        return self.name or self.email or self.phone_number
 
 
 class Category(TimeStampedModel):

@@ -14,6 +14,8 @@ from contact.serializers import (
     ContactSerializer
 )
 
+from django.db.models.functions import Lower
+
 
 CONTACTS_URL = reverse('contact:contact-list')
 
@@ -69,11 +71,11 @@ class PrivateContactAPITests(TestCase):
     def test_retrieve_contacts(self):
         """Test retrieving a list of contacts."""
         create_contact(user=self.user)
-        create_contact(user=self.user, email="contact2@mail.com")
+        create_contact(user=self.user, email="contact2@mail.com", name="MyContact", phone_number="7777777")
 
         res = self.client.get(CONTACTS_URL)
 
-        contacts = Contact.objects.all().order_by('-name')
+        contacts = Contact.objects.all().order_by(Lower('name'))
         serializer = ContactSerializer(contacts, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
