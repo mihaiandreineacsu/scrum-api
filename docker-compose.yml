@@ -3,7 +3,7 @@
 version: "3.9"
 
 services:
-  app:
+  scrum-api-app:
     env_file:
         - .env
     build:
@@ -14,7 +14,7 @@ services:
       - "8000:8000" # maps port 8000 from local machine to port 8000 inside Docker container
     volumes:
       - ./app:/app # maps app directory from local machine to /app  inside Docker container
-      - dev-static-data:/vol/web
+      - scrum-api-static-data:/vol/web
     command: > #command that is used to run the service
           sh -c "python manage.py wait_for_db &&
                  python manage.py migrate &&
@@ -27,25 +27,25 @@ services:
       - DEBUG
       - SECRET_KEY
       - USE_SQLITE
-      - DB_HOST=db
-      - DB_NAME=devdb
-      - DB_PASS=changeme
-      - DB_USER=devuser
+      - DB_HOST=scrum-api-db
+      - DB_NAME=scrumapidevdb
+      - DB_PASS=scrumapichangeme
+      - DB_USER=scrumapidevuser
       - EMAIL_HOST_USER=noreply.join@e-mail.de
       - EMAIL_HOST_PASSWORD
       - EMAIL_HOST=smtp.1und1.de
     depends_on:
-      - db
+      - scrum-api-db
 
-  db:
+  scrum-api-db:
     image: postgres:13-alpine
     volumes:
-      - dev-db-data:/var/lib/postgresql/data
+      - scrum-api-db-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=devdb
-      - POSTGRES_USER=devuser
-      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_DB=scrumapidevdb
+      - POSTGRES_USER=scrumapidevuser
+      - POSTGRES_PASSWORD=scrumapichangeme
 
 volumes:
-  dev-db-data:
-  dev-static-data:
+  scrum-api-db-data:
+  scrum-api-static-data:

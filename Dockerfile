@@ -34,17 +34,17 @@ RUN python -m venv /py && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* && \
-    useradd -m django-user && \
+    useradd -m scrum-api && \
     if [ "$DEV" = "true" ]; then \
-        mkdir -p /home/django-user && \
-        chown django-user:django-user /home/django-user; \
+        mkdir -p /home/scrum-api && \
+        chown scrum-api:scrum-api /home/scrum-api; \
     fi && \
     mkdir -p /vol/web/media && \
     mkdir -p /vol/web/static && \
-    chown -R django-user:django-user /vol && \
+    chown -R scrum-api:scrum-api /vol && \
     chmod -R 755 /vol
 # ENV updates the environment variable inside the image
 ENV PATH="/py/bin:$PATH"
 # USER line should be last line of Dockerfile, specifies the user to switch to.
 # Before this line everything is done as ROOT user, after this line everything is done as what the USER was set to.
-USER django-user
+USER scrum-api

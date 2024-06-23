@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  app:
+  scrum-api-app:
     # command: ["sh", "-c", "python ./manage.py migrate && python debugpy --wait-for-client --listen 0.0.0.0:5678 ./manage.py runserver 0.0.0.0:8000"]
     command: > #command that is used to run the service
           sh -c "python manage.py migrate && \
