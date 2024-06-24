@@ -1,7 +1,3 @@
-# Docker Compose Files consist of services needed by application.
-# Docker Compose version syntax used
-version: "3.9"
-
 services:
   scrum-api-app:
     env_file:
@@ -10,15 +6,14 @@ services:
       context: . # This means build our docker file in current directory
       args:
         - DEV=true # Configure docker-compose on build to install Dev Requirements
-    ports:
-      - "8000:8000" # maps port 8000 from local machine to port 8000 inside Docker container
     volumes:
       - ./app:/app # maps app directory from local machine to /app  inside Docker container
       - scrum-api-static-data:/vol/web
     command: > #command that is used to run the service
           sh -c "python manage.py wait_for_db &&
+                 python manage.py collectstatic --noinput &&
                  python manage.py migrate &&
-                 python manage.py runserver 0.0.0.0:8000"
+                 gunicorn app.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     environment:
       - STATIC_ROOT
       - MEDIA_ROOT
@@ -36,6 +31,25 @@ services:
       - EMAIL_HOST=smtp.1und1.de
     depends_on:
       - scrum-api-db
+    networks:
+      - scrum-api-network
+
+  scrum-api-nginx:
+    image: nginx:alpine
+    depends_on:
+      - scrum-api-app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - scrum-api-static-data:/vol/web  # Named volume for sharing between containers
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - scrum-api-network
 
   scrum-api-db:
     image: postgres:13-alpine
@@ -45,7 +59,13 @@ services:
       - POSTGRES_DB=scrumapidevdb
       - POSTGRES_USER=scrumapidevuser
       - POSTGRES_PASSWORD=scrumapichangeme
+    networks:
+      - scrum-api-network
 
 volumes:
   scrum-api-db-data:
   scrum-api-static-data:
+
+networks:
+  scrum-api-network:
+    driver: bridge

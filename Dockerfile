@@ -14,7 +14,7 @@ COPY ./app /app
 WORKDIR /app
 # exposing Port from our container to our machine on container run,
 # allowing to access that port on the container that's running from Docker image.
-EXPOSE 8000
+EXPOSE 8080
 # Configure dockerfile if dev build to install Dev Requirements
 ARG DEV=false
 # for each RUN in Dockerfile a image layer is created,
@@ -34,17 +34,17 @@ RUN python -m venv /py && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* && \
-    useradd -m scrum-api && \
+    useradd -m scrum-api-user && \
     if [ "$DEV" = "true" ]; then \
-        mkdir -p /home/scrum-api && \
-        chown scrum-api:scrum-api /home/scrum-api; \
+        mkdir -p /home/scrum-api-user && \
+        chown scrum-api-user:scrum-api-user /home/scrum-api-user; \
     fi && \
     mkdir -p /vol/web/media && \
     mkdir -p /vol/web/static && \
-    chown -R scrum-api:scrum-api /vol && \
+    chown -R scrum-api-user:scrum-api-user /vol && \
     chmod -R 755 /vol
 # ENV updates the environment variable inside the image
 ENV PATH="/py/bin:$PATH"
 # USER line should be last line of Dockerfile, specifies the user to switch to.
 # Before this line everything is done as ROOT user, after this line everything is done as what the USER was set to.
-USER scrum-api
+USER scrum-api-user
