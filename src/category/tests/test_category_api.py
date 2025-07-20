@@ -1,6 +1,7 @@
 """
 Tests for category APIs.
 """
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -10,16 +11,16 @@ from rest_framework.test import APIClient
 from category.serializers import CategorySerializer
 from core.models import Category
 
-CATEGORIES_URL = reverse('category:category-list')
+CATEGORIES_URL = reverse("category:category-list")
 
 
 def create_category(user, **params):
     """Create and return a sample category."""
-    name = params.get('name', 'Some Category Name')
-    color = params.get('color', '#FFFFFF')
+    name = params.get("name", "Some Category Name")
+    color = params.get("color", "#FFFFFF")
     defaults = {
-        'name': name,
-        'color': color,
+        "name": name,
+        "color": color,
     }
     defaults.update(params)
 
@@ -29,7 +30,7 @@ def create_category(user, **params):
 
 def detail_url(category_id):
     """Create and return a category detail URL."""
-    return reverse('category:category-detail', args=[category_id])
+    return reverse("category:category-detail", args=[category_id])
 
 
 def create_user(**params):
@@ -56,8 +57,8 @@ class PrivateCategoryAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            'user@example.com',
-            'testpass123',
+            "user@example.com",
+            "testpass123",
         )
         self.client.force_authenticate(self.user)
 
@@ -68,7 +69,7 @@ class PrivateCategoryAPITests(TestCase):
 
         res = self.client.get(CATEGORIES_URL)
 
-        categories = Category.objects.all().order_by('name')
+        categories = Category.objects.all().order_by("name")
         serializer = CategorySerializer(categories, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -76,8 +77,8 @@ class PrivateCategoryAPITests(TestCase):
     def test_category_list_limited_to_user(self):
         """Test list of categories is limited to authenticated user."""
         other_user = get_user_model().objects.create_user(
-            'other@example.com',
-            'testpass123',
+            "other@example.com",
+            "testpass123",
         )
         create_category(user=other_user)
         create_category(user=self.user, name="Category 2")
@@ -92,13 +93,13 @@ class PrivateCategoryAPITests(TestCase):
     def test_create_category(self):
         """Test creating a category."""
         payload = {
-            'name': 'Some Category',
-            'color': '#000000',
+            "name": "Some Category",
+            "color": "#000000",
         }
         res = self.client.post(CATEGORIES_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        category = Category.objects.get(id=res.data['id'])
+        category = Category.objects.get(id=res.data["id"])
         for k, v in payload.items():
             self.assertEqual(getattr(category, k), v)
         self.assertEqual(category.user, self.user)
@@ -107,16 +108,16 @@ class PrivateCategoryAPITests(TestCase):
         """Test partial update if a category."""
         category = create_category(
             user=self.user,
-            color='#AAAAAA',
+            color="#AAAAAA",
         )
 
-        payload = {'color': '#BBBBBB'}
+        payload = {"color": "#BBBBBB"}
         url = detail_url(category.id)
         res = self.client.patch(url, payload)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         category.refresh_from_db()
-        self.assertEqual(category.color, payload['color'])
+        self.assertEqual(category.color, payload["color"])
         self.assertEqual(category.user, self.user)
 
     def test_full_update(self):
@@ -126,8 +127,8 @@ class PrivateCategoryAPITests(TestCase):
         )
 
         payload = {
-            'name': 'Category 2',
-            'color': '#CCCCCC',
+            "name": "Category 2",
+            "color": "#CCCCCC",
         }
         url = detail_url(category.id)
         res = self.client.put(url, payload)
@@ -140,10 +141,10 @@ class PrivateCategoryAPITests(TestCase):
 
     def test_update_user_returns_error(self):
         """test changing the category user results in an error."""
-        new_user = create_user(email='user2@example.com', password='test123')
+        new_user = create_user(email="user2@example.com", password="test123")
         category = create_category(user=self.user)
 
-        payload = {'user': new_user.id}
+        payload = {"user": new_user.id}
         url = detail_url(category.id)
         self.client.patch(url, payload)
 
@@ -162,7 +163,7 @@ class PrivateCategoryAPITests(TestCase):
 
     def test_category_other_users_category_error(self):
         """Test trying to delete another users category gives error."""
-        new_user = create_user(email='user2@example.com', password='test123')
+        new_user = create_user(email="user2@example.com", password="test123")
         category = create_category(user=new_user)
 
         url = detail_url(category.id)

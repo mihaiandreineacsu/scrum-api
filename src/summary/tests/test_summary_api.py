@@ -1,6 +1,7 @@
 """
 Tests for subtask APIs.
 """
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -14,12 +15,12 @@ from rest_framework.test import APIClient
 # )
 
 
-SUMMARY_URL = reverse('summary:summary')
+SUMMARY_URL = reverse("summary:summary")
 
 
 def detail_url(summary_id):
     """Create and return a summary detail URL."""
-    return reverse('summary:summary-detail', args=[summary_id])
+    return reverse("summary:summary-detail", args=[summary_id])
 
 
 def create_user(**params):

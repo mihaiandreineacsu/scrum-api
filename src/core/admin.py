@@ -1,6 +1,7 @@
 """
 Django admin customization.
 """
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
@@ -151,6 +152,7 @@ class SummaryAdmin(admin.ModelAdmin):
     list_display = ["id", "created_at", "updated_at", "user"]
     list_filter = ["created_at", "updated_at", "user"]
     search_fields = ["user"]
+
 
 # TODO
 # admin.site.register(models.Summary, SummaryAdmin)

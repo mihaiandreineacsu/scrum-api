@@ -11,10 +11,10 @@ from rest_framework.routers import DefaultRouter
 from contact import views
 
 router = DefaultRouter()
-router.register('contacts', views.ContactViewSet)
+router.register("contacts", views.ContactViewSet)
 
-app_name = 'contact'
+app_name = "contact"
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]

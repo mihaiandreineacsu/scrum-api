@@ -1,6 +1,7 @@
 """
 Tests for board APIs.
 """
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -10,14 +11,12 @@ from rest_framework.test import APIClient
 from board.serializers import BoardSerializer
 from core.models import Board
 
-BOARDS_URL = reverse('board:board-list')
+BOARDS_URL = reverse("board:board-list")
 
 
 def create_board(user, **params):
     """Create and return a sample board."""
-    defaults = {
-        'title': 'Some board Title'
-    }
+    defaults = {"title": "Some board Title"}
     defaults.update(params)
 
     board = Board.objects.create(user=user, **defaults)
@@ -26,7 +25,7 @@ def create_board(user, **params):
 
 def detail_url(board_id):
     """Create and return a board detail URL."""
-    return reverse('board:board-detail', args=[board_id])
+    return reverse("board:board-detail", args=[board_id])
 
 
 def create_user(**params):
@@ -53,8 +52,8 @@ class PrivateBoardAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            'user@example.com',
-            'testpass123',
+            "user@example.com",
+            "testpass123",
         )
         self.client.force_authenticate(self.user)
 
@@ -65,7 +64,7 @@ class PrivateBoardAPITests(TestCase):
 
         res = self.client.get(BOARDS_URL)
 
-        boards = Board.objects.all().order_by('-id')
+        boards = Board.objects.all().order_by("-id")
         serializer = BoardSerializer(boards, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -73,15 +72,15 @@ class PrivateBoardAPITests(TestCase):
     def test_board_boards_limited_to_user(self):
         """Test board of boards is limited to authenticated user."""
         other_user = get_user_model().objects.create_user(
-            'other@example.com',
-            'testpass123',
+            "other@example.com",
+            "testpass123",
         )
         create_board(user=other_user)
         create_board(user=self.user, title="My Board")
 
         res = self.client.get(BOARDS_URL)
 
-        boards = Board.objects.filter(user=self.user).order_by('-id')
+        boards = Board.objects.filter(user=self.user).order_by("-id")
         serializer = BoardSerializer(boards, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -89,12 +88,12 @@ class PrivateBoardAPITests(TestCase):
     def test_create_board(self):
         """Test creating a board."""
         payload = {
-            'title': 'New Board',
+            "title": "New Board",
         }
         res = self.client.post(BOARDS_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        board = Board.objects.get(id=res.data['id'])
+        board = Board.objects.get(id=res.data["id"])
         for k, v in payload.items():
             self.assertEqual(getattr(board, k), v)
         self.assertEqual(board.user, self.user)
@@ -103,16 +102,16 @@ class PrivateBoardAPITests(TestCase):
         """Test partial update if a board."""
         board = create_board(
             user=self.user,
-            title='Board Title',
+            title="Board Title",
         )
 
-        payload = {'title': 'Board Title Updated'}
+        payload = {"title": "Board Title Updated"}
         url = detail_url(board.id)
         res = self.client.patch(url, payload)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         board.refresh_from_db()
-        self.assertEqual(board.title, payload['title'])
+        self.assertEqual(board.title, payload["title"])
         self.assertEqual(board.user, self.user)
 
     def test_full_update(self):
@@ -123,7 +122,7 @@ class PrivateBoardAPITests(TestCase):
         )
 
         payload = {
-            'title': 'Board full update',
+            "title": "Board full update",
         }
         url = detail_url(board.id)
         res = self.client.put(url, payload)
@@ -136,10 +135,10 @@ class PrivateBoardAPITests(TestCase):
 
     def test_update_user_returns_error(self):
         """test changing the board user results in an error."""
-        new_user = create_user(email='user2@example.com', password='test123')
+        new_user = create_user(email="user2@example.com", password="test123")
         board = create_board(user=self.user)
 
-        payload = {'user': new_user.id}
+        payload = {"user": new_user.id}
         url = detail_url(board.id)
         self.client.patch(url, payload)
 
@@ -158,7 +157,7 @@ class PrivateBoardAPITests(TestCase):
 
     def test_board_other_users_board_error(self):
         """Test trying to delete another users board gives error."""
-        new_user = create_user(email='user2@example.com', password='test123')
+        new_user = create_user(email="user2@example.com", password="test123")
         board = create_board(user=new_user)
 
         url = detail_url(board.id)

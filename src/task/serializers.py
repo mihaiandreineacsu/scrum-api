@@ -1,6 +1,7 @@
 """
 Serializers for Task APIs
 """
+
 from rest_framework import serializers
 
 from category.serializers import CategorySerializer
@@ -70,7 +71,9 @@ class TaskSerializer(serializers.ModelSerializer):
         if subtasks_data is None:
             return
 
-        subtask_ids = {data.get('id') for data in subtasks_data if data.get('id') is not None}
+        subtask_ids = {
+            data.get("id") for data in subtasks_data if data.get("id") is not None
+        }
         existing_subtasks = {subtask.id: subtask for subtask in instance.subtasks.all()}
 
         # Delete subtasks not included in the update
@@ -87,7 +90,9 @@ class TaskSerializer(serializers.ModelSerializer):
                     setattr(subtask, attr, value)
                 subtask.save()
             elif not subtask_id:
-                Subtask.objects.create(user=instance.user, task=instance, **subtask_data)
+                Subtask.objects.create(
+                    user=instance.user, task=instance, **subtask_data
+                )
 
     def to_representation(self, instance):
         self.fields["category"] = CategorySerializer(read_only=True)

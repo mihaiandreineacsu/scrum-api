@@ -1,6 +1,7 @@
 """
 Views for the user API.
 """
+
 from django.contrib.auth import get_user_model
 from rest_framework import (
     authentication,
@@ -31,7 +32,7 @@ class CreateGuestUserView(APIView):
     def post(self, request, *args, **kwargs):
         user = get_user_model().objects.create_guest_user()
         token, created = Token.objects.get_or_create(user=user)
-        return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+        return Response({"token": token.key}, status=status.HTTP_201_CREATED)
 
 
 class CreateTokenView(ObtainAuthToken):

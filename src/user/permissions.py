@@ -9,11 +9,11 @@ class IsNotGuestUser(permissions.BasePermission):
     def has_permission(self, request, view):
         # Check if the request is a safe method (GET, HEAD, OPTIONS)
         # which is allowed for guest users as well.
-        if request.method in permissions.SAFE_METHODS or request.method == 'DELETE':
+        if request.method in permissions.SAFE_METHODS or request.method == "DELETE":
             return True
 
         # Allow DELETE method only if the user is not a guest
-        if request.method == 'DELETE':
+        if request.method == "DELETE":
             return not request.user.is_guest
 
         # For methods other than safe methods, check if the user is not a guest

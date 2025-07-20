@@ -1,6 +1,7 @@
 """
 Tests for subtask APIs.
 """
+
 import json
 from datetime import date
 
@@ -14,10 +15,10 @@ from core import models
 from core.models import Subtask
 from subtask.serializers import SubtaskSerializer
 
-SUBTASKS_URL = reverse('subtask:subtask-list')
+SUBTASKS_URL = reverse("subtask:subtask-list")
 
 
-def create_category(user, name='Category', color='#FF0000'):
+def create_category(user, name="Category", color="#FF0000"):
     """Create and return a new category"""
     return models.Category.objects.create(user=user, name=name, color=color)
 
@@ -25,12 +26,12 @@ def create_category(user, name='Category', color='#FF0000'):
 def create_task(user, **params):
     """Create and return a sample task."""
     defaults = {
-        'title': 'Sample task title',
-        'description': 'Sample description',
-        'priority': 'Low',
-        'due_date': date.today(),
-        'category': create_category(user=user),
-        'priority': 'Low'
+        "title": "Sample task title",
+        "description": "Sample description",
+        "priority": "Low",
+        "due_date": date.today(),
+        "category": create_category(user=user),
+        "priority": "Low",
     }
     defaults.update(params)
 
@@ -41,9 +42,9 @@ def create_task(user, **params):
 def create_subtask(user, **params):
     """Create and return a sample subtask."""
     defaults = {
-        'title': 'Sample task title',
-        'done': False,
-        'task': create_task(user=user)
+        "title": "Sample task title",
+        "done": False,
+        "task": create_task(user=user),
     }
     defaults.update(params)
 
@@ -53,7 +54,7 @@ def create_subtask(user, **params):
 
 def detail_url(subtask_id):
     """Create and return a subtask detail URL."""
-    return reverse('subtask:subtask-detail', args=[subtask_id])
+    return reverse("subtask:subtask-detail", args=[subtask_id])
 
 
 def create_user(**params):
@@ -80,8 +81,8 @@ class PrivateSubtaskAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            'user@example.com',
-            'testpass123',
+            "user@example.com",
+            "testpass123",
         )
         self.client.force_authenticate(self.user)
 
@@ -92,7 +93,7 @@ class PrivateSubtaskAPITests(TestCase):
 
         res = self.client.get(SUBTASKS_URL)
 
-        subtasks = Subtask.objects.all().order_by('-id')
+        subtasks = Subtask.objects.all().order_by("-id")
         serializer = SubtaskSerializer(subtasks, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -100,15 +101,15 @@ class PrivateSubtaskAPITests(TestCase):
     def test_subtask_list_limited_to_user(self):
         """Test list of subtasks is limited to authenticated user."""
         other_user = get_user_model().objects.create_user(
-            'other@example.com',
-            'testpass123',
+            "other@example.com",
+            "testpass123",
         )
         create_subtask(user=other_user)
         create_subtask(user=self.user, title="My Subtask")
 
         res = self.client.get(SUBTASKS_URL)
 
-        subtasks = Subtask.objects.filter(user=self.user).order_by('-id')
+        subtasks = Subtask.objects.filter(user=self.user).order_by("-id")
         serializer = SubtaskSerializer(subtasks, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -117,17 +118,17 @@ class PrivateSubtaskAPITests(TestCase):
         """Test creating a subtask."""
         task = create_task(user=self.user)
         payload = {
-            'title': 'New Subtask',
-            'done': False,
-            'task': task.id,
-            'user': self.user.id
+            "title": "New Subtask",
+            "done": False,
+            "task": task.id,
+            "user": self.user.id,
         }
         res = self.client.post(SUBTASKS_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        subtask = Subtask.objects.get(id=res.data['id'])
+        subtask = Subtask.objects.get(id=res.data["id"])
         for k, v in payload.items():
-            if k == 'task' or k == 'user':  # Special handling for the ForeignKey field
+            if k == "task" or k == "user":  # Special handling for the ForeignKey field
                 self.assertEqual(getattr(subtask, k).id, v)
             else:
                 self.assertEqual(getattr(subtask, k), v)
@@ -137,16 +138,16 @@ class PrivateSubtaskAPITests(TestCase):
         """Test partial update if a subtask."""
         subtask = create_subtask(
             user=self.user,
-            title='Subtask Title',
+            title="Subtask Title",
         )
 
-        payload = {'title': 'Subtask Title Updated'}
+        payload = {"title": "Subtask Title Updated"}
         url = detail_url(subtask.id)
         res = self.client.patch(url, payload)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         subtask.refresh_from_db()
-        self.assertEqual(subtask.title, payload['title'])
+        self.assertEqual(subtask.title, payload["title"])
         self.assertEqual(subtask.user, self.user)
 
     def test_full_update(self):
@@ -156,27 +157,23 @@ class PrivateSubtaskAPITests(TestCase):
             user=self.user,
         )
 
-        payload = {
-            'title': 'Subtask full update',
-            'done': True,
-            'task': task.id
-        }
+        payload = {"title": "Subtask full update", "done": True, "task": task.id}
         url = detail_url(subtask.id)
-        res = self.client.put(url, json.dumps(payload), content_type='application/json')
+        res = self.client.put(url, json.dumps(payload), content_type="application/json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         subtask.refresh_from_db()
         for k, v in payload.items():
-            if k != 'task':
+            if k != "task":
                 self.assertEqual(getattr(subtask, k), v)
         self.assertEqual(subtask.task.id, task.id)
         self.assertEqual(subtask.user, self.user)
 
     def test_update_user_returns_error(self):
         """test changing the subtask user results in an error."""
-        new_user = create_user(email='user2@example.com', password='test123')
+        new_user = create_user(email="user2@example.com", password="test123")
         subtask = create_subtask(user=self.user)
 
-        payload = {'user': new_user.id}
+        payload = {"user": new_user.id}
         url = detail_url(subtask.id)
         self.client.patch(url, payload)
 
@@ -195,7 +192,7 @@ class PrivateSubtaskAPITests(TestCase):
 
     def test_subtask_other_users_subtask_error(self):
         """Test trying to delete another users subtask gives error."""
-        new_user = create_user(email='user2@example.com', password='test123')
+        new_user = create_user(email="user2@example.com", password="test123")
         subtask = create_subtask(user=new_user)
 
         url = detail_url(subtask.id)

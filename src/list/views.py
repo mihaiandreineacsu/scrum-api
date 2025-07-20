@@ -1,6 +1,7 @@
 """
 Views for the list APIs.
 """
+
 from django.db.models import Max, Prefetch
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -23,9 +24,13 @@ class ListViewSet(PositionViewSet):
     def get_queryset(self):
         """Retrieve list for authenticated user."""
         # Prefetch related tasks to optimize query performance
-        return self.queryset.filter(user=self.request.user).prefetch_related(
-            Prefetch('tasks', queryset=Task.objects.order_by('-position'))
-        ).order_by('-id')
+        return (
+            self.queryset.filter(user=self.request.user)
+            .prefetch_related(
+                Prefetch("tasks", queryset=Task.objects.order_by("-position"))
+            )
+            .order_by("-id")
+        )
 
     def get_serializer_class(self):
         """Return the serializer class for request."""
@@ -46,7 +51,9 @@ class ListViewSet(PositionViewSet):
         try:
             return super().update(request, *args, **kwargs)
         except PositionException as e:
-            return Response(data={"message": str(e), "status": e.status_code, "error": str(e.error)})
+            return Response(
+                data={"message": str(e), "status": e.status_code, "error": str(e.error)}
+            )
 
     def perform_create(self, serializer):
         """Create a new list."""

@@ -1,6 +1,7 @@
 """
 Views for the task APIs.
 """
+
 from django.db.models import Max
 from rest_framework import filters
 from rest_framework.authentication import TokenAuthentication
@@ -54,7 +55,9 @@ class TaskViewSet(PositionViewSet):
         try:
             return super().update(request, *args, **kwargs)
         except PositionException as e:
-            return Response(data={"message": str(e), "status": e.status_code, "error": str(e.error)})
+            return Response(
+                data={"message": str(e), "status": e.status_code, "error": str(e.error)}
+            )
 
     def perform_create(self, serializer):
         """Create a new task."""

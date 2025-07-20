@@ -1,6 +1,7 @@
 """
 Database models.
 """
+
 import os
 import uuid
 
@@ -30,9 +31,7 @@ class PositionedModel(models.Model):
     position = models.IntegerField(null=True)
     parent_attribute = None  # This will be set in the subclasses
     # Swap positions
-    temporary_position = (
-        None  # or another value that you're sure won't conflict
-    )
+    temporary_position = None  # or another value that you're sure won't conflict
 
     class Meta:
         abstract = True
@@ -51,7 +50,9 @@ class PositionedModel(models.Model):
             raise ValueError(f"parent_attribute is not set in {cls.__name__}")
         filter_kwargs = {}
         filter_kwargs = {cls.parent_attribute: parent_value}
-        aggregate_result = cls.objects.filter(**filter_kwargs).aggregate(models.Max("position"))
+        aggregate_result = cls.objects.filter(**filter_kwargs).aggregate(
+            models.Max("position")
+        )
         return aggregate_result["position__max"]
 
     @classmethod
@@ -66,7 +67,9 @@ class PositionedModel(models.Model):
         filter_kwargs = {}
 
         filter_kwargs = {cls.parent_attribute: parent_value}
-        aggregate_result = cls.objects.filter(**filter_kwargs).aggregate(models.Min("position"))
+        aggregate_result = cls.objects.filter(**filter_kwargs).aggregate(
+            models.Min("position")
+        )
         return aggregate_result["position__min"]
 
     @classmethod
@@ -98,7 +101,9 @@ class PositionedModel(models.Model):
                     **{cls.parent_attribute: parent1},
                     position__gt=instance1_position,
                     position__lt=instance2_position,
-                ).order_by('position')  # Sorting in ascending order
+                ).order_by(
+                    "position"
+                )  # Sorting in ascending order
                 instances_between.update(position=models.F("position") - 1)
                 instance2.position = instance2_position - 1
             elif instance1_position > instance2_position:
@@ -107,7 +112,9 @@ class PositionedModel(models.Model):
                     **{cls.parent_attribute: parent1},
                     position__lt=instance1_position,
                     position__gt=instance2_position,
-                ).order_by('-position')  # Sorting in descending order
+                ).order_by(
+                    "-position"
+                )  # Sorting in descending order
                 instances_between.update(position=models.F("position") + 1)
                 instance2.position = instance2_position + 1
 
@@ -167,9 +174,9 @@ class UserManager(BaseUserManager):
     def create_guest_user(self, **extra_fields):
         """Create and return a new guest user with a random username."""
         random_identifier = generate_name()
-        dummy_email = f'{self.normalize_email_identifier(random_identifier)}@guest.com'
+        dummy_email = f"{self.normalize_email_identifier(random_identifier)}@guest.com"
         user = self.model(email=dummy_email, **extra_fields)
-        user.name = f'{random_identifier}'
+        user.name = f"{random_identifier}"
         user.set_unusable_password()
         user.is_guest = True
         user.save(using=self._db)
@@ -179,7 +186,7 @@ class UserManager(BaseUserManager):
         # Convert to lowercase to normalize
         normalized = identifier.lower()
         # Replace any disallowed characters (if there were any, depends on generation logic)
-        normalized = normalized.replace(' ', '_')
+        normalized = normalized.replace(" ", "_")
         return normalized
 
 
@@ -248,15 +255,19 @@ class Contact(TimeStampedModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'email'],
-                name='unique_user_email',
-                condition=models.Q(email__isnull=False) & ~models.Q(email__exact='')  # Ensure the constraint only applies when email is not NULL
+                fields=["user", "email"],
+                name="unique_user_email",
+                condition=models.Q(email__isnull=False)
+                & ~models.Q(
+                    email__exact=""
+                ),  # Ensure the constraint only applies when email is not NULL
             ),
             models.UniqueConstraint(
-                fields=['user', 'phone_number'],
-                name='unique_user_phone',
-                condition=models.Q(phone_number__isnull=False) & ~models.Q(phone_number__exact='')
-            )
+                fields=["user", "phone_number"],
+                name="unique_user_phone",
+                condition=models.Q(phone_number__isnull=False)
+                & ~models.Q(phone_number__exact=""),
+            ),
         ]
 
     def __str__(self):

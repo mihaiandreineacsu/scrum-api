@@ -1,6 +1,7 @@
 """
 Tests for list APIs.
 """
+
 import json
 
 from django.contrib.auth import get_user_model
@@ -12,7 +13,7 @@ from rest_framework.test import APIClient
 from core.models import Board, List
 from list.serializers import ListSerializer
 
-LISTS_URL = reverse('list:list-list')
+LISTS_URL = reverse("list:list-list")
 
 
 def create_board(user):
@@ -23,9 +24,7 @@ def create_board(user):
 
 def create_list(user, **params):
     """Create and return a sample list."""
-    defaults = {
-        'name': 'Some list name'
-    }
+    defaults = {"name": "Some list name"}
     defaults.update(params)
 
     list = List.objects.create(user=user, **defaults)
@@ -34,7 +33,7 @@ def create_list(user, **params):
 
 def detail_url(list_id):
     """Create and return a list detail URL."""
-    return reverse('list:list-detail', args=[list_id])
+    return reverse("list:list-detail", args=[list_id])
 
 
 def create_user(**params):
@@ -61,8 +60,8 @@ class PrivateListAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            'user@example.com',
-            'testpass123',
+            "user@example.com",
+            "testpass123",
         )
         self.client.force_authenticate(self.user)
 
@@ -73,7 +72,7 @@ class PrivateListAPITests(TestCase):
 
         res = self.client.get(LISTS_URL)
 
-        lists = List.objects.all().order_by('-id')
+        lists = List.objects.all().order_by("-id")
         serializer = ListSerializer(lists, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -81,15 +80,15 @@ class PrivateListAPITests(TestCase):
     def test_list_lists_limited_to_user(self):
         """Test list of lists is limited to authenticated user."""
         other_user = get_user_model().objects.create_user(
-            'other@example.com',
-            'testpass123',
+            "other@example.com",
+            "testpass123",
         )
         create_list(user=other_user)
         create_list(user=self.user, name="My List")
 
         res = self.client.get(LISTS_URL)
 
-        lists = List.objects.filter(user=self.user).order_by('-id')
+        lists = List.objects.filter(user=self.user).order_by("-id")
         serializer = ListSerializer(lists, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -99,30 +98,31 @@ class PrivateListAPITests(TestCase):
         board = create_board(self.user)
         self.assertIsNotNone(board.id, "Board creation failed")
 
-        payload = {
-            "name": "New List",
-            "board": board.id
-        }
+        payload = {"name": "New List", "board": board.id}
 
-        res = self.client.post(LISTS_URL, json.dumps(payload), content_type='application/json')
+        res = self.client.post(
+            LISTS_URL, json.dumps(payload), content_type="application/json"
+        )
         self.assertEqual(res.status_code, 201)
-        self.assertEqual(res.data.get('name'), 'New List')
-        self.assertEqual(res.data.get('board'), board.id)
+        self.assertEqual(res.data.get("name"), "New List")
+        self.assertEqual(res.data.get("board"), board.id)
 
     def test_partial_update(self):
         """Test partial update if a list."""
         list = create_list(
             user=self.user,
-            name='List Title',
+            name="List Title",
         )
 
-        payload = {'name': 'List Title Updated'}
+        payload = {"name": "List Title Updated"}
         url = detail_url(list.id)
-        res = self.client.patch(url, json.dumps(payload), content_type='application/json')
+        res = self.client.patch(
+            url, json.dumps(payload), content_type="application/json"
+        )
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         list.refresh_from_db()
-        self.assertEqual(list.name, payload['name'])
+        self.assertEqual(list.name, payload["name"])
         self.assertEqual(list.user, self.user)
 
     def test_full_update(self):
@@ -132,29 +132,26 @@ class PrivateListAPITests(TestCase):
             user=self.user,
         )
 
-        payload = {
-            'name': 'List full update',
-            'board': board.id
-        }
+        payload = {"name": "List full update", "board": board.id}
         url = detail_url(list.id)
-        res = self.client.put(url, json.dumps(payload), content_type='application/json')
+        res = self.client.put(url, json.dumps(payload), content_type="application/json")
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         list.refresh_from_db()
         for k, v in payload.items():
-            if k != 'board':
+            if k != "board":
                 self.assertEqual(getattr(list, k), v)
         self.assertEqual(list.board, board)
         self.assertEqual(list.user, self.user)
 
     def test_update_user_returns_error(self):
         """test changing the list user results in an error."""
-        new_user = create_user(email='user2@example.com', password='test123')
+        new_user = create_user(email="user2@example.com", password="test123")
         list = create_list(user=self.user)
 
-        payload = {'user': new_user.id}
+        payload = {"user": new_user.id}
         url = detail_url(list.id)
-        self.client.patch(url, payload, content_type='application/json')
+        self.client.patch(url, payload, content_type="application/json")
 
         list.refresh_from_db()
         self.assertEqual(list.user, self.user)
@@ -171,7 +168,7 @@ class PrivateListAPITests(TestCase):
 
     def test_list_other_users_list_error(self):
         """Test trying to delete another users list gives error."""
-        new_user = create_user(email='user2@example.com', password='test123')
+        new_user = create_user(email="user2@example.com", password="test123")
         list = create_list(user=new_user)
 
         url = detail_url(list.id)

@@ -1,6 +1,7 @@
 """
 URL mappings for the list app.
 """
+
 from django.urls import (
     include,
     path,
@@ -10,10 +11,10 @@ from rest_framework.routers import DefaultRouter
 from list import views
 
 router = DefaultRouter()
-router.register('lists', views.ListViewSet)
+router.register("lists", views.ListViewSet)
 
-app_name = 'list'
+app_name = "list"
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]
