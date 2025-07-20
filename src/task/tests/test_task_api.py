@@ -2,15 +2,16 @@
 Tests for task APIs.
 """
 import json
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-from core.models import Task, Category, Contact, Subtask
-from task.serializers import TaskSerializer
-from datetime import date
 
+from core.models import Category, Contact, Subtask, Task
+from task.serializers import TaskSerializer
 
 TASKS_URL = reverse('task:task-list')
 

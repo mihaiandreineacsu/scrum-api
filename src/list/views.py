@@ -1,15 +1,15 @@
 """
 Views for the list APIs.
 """
-from position.views import PositionViewSet
-from position.position_exception import PositionException
-from rest_framework.response import Response
+from django.db.models import Max, Prefetch
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Max, Prefetch
+from rest_framework.response import Response
 
 from core.models import List, Task
 from list import serializers
+from position.position_exception import PositionException
+from position.views import PositionViewSet
 
 
 class ListViewSet(PositionViewSet):

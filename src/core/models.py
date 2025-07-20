@@ -1,17 +1,19 @@
 """
 Database models.
 """
-import uuid
 import os
+import uuid
+
+from colorfield.fields import ColorField
 from django.conf import settings
-from django.db import models, transaction
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
+from django.db import models, transaction
+
 from core.utils import generate_name
-from colorfield.fields import ColorField
 
 
 def user_image_file_path(instance, filename):

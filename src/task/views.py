@@ -1,16 +1,16 @@
 """
 Views for the task APIs.
 """
-from position.views import PositionViewSet
-from position.position_exception import PositionException
+from django.db.models import Max
 from rest_framework import filters
-from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from core.models import Task
+from position.position_exception import PositionException
+from position.views import PositionViewSet
 from task import serializers
-from django.db.models import Max
 
 
 class TaskViewSet(PositionViewSet):

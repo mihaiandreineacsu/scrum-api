@@ -1,14 +1,13 @@
 """
 Views for the category APIs.
 """
+from django.db.models.functions import Lower
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Category
 from category import serializers
-
-from django.db.models.functions import Lower
+from core.models import Category
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

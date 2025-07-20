@@ -2,21 +2,17 @@
 Tests for subtask APIs.
 """
 import json
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Subtask
-
-from subtask.serializers import (
-    SubtaskSerializer
-)
-from datetime import date
 from core import models
-
+from core.models import Subtask
+from subtask.serializers import SubtaskSerializer
 
 SUBTASKS_URL = reverse('subtask:subtask-list')
 

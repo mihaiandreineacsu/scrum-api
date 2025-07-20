@@ -1,14 +1,14 @@
 """
 URL mappings for the summary app.
 """
-from django.urls import (
+from django.urls import (  # include,
     path,
-    # include,
 )
+
+from summary import views
 
 # from rest_framework.routers import DefaultRouter
 
-from summary import views
 
 # router = DefaultRouter()
 # router.register('summary', views.SummaryView)

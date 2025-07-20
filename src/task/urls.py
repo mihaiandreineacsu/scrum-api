@@ -2,10 +2,9 @@
 URL mappings for the task app.
 """
 from django.urls import (
-    path,
     include,
+    path,
 )
-
 from rest_framework.routers import DefaultRouter
 
 from task import views

@@ -4,16 +4,11 @@ Tests for category APIs.
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from category.serializers import CategorySerializer
 from core.models import Category
-
-from category.serializers import (
-    CategorySerializer
-)
-
 
 CATEGORIES_URL = reverse('category:category-list')
 

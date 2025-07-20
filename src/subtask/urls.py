@@ -2,10 +2,9 @@
 URL mappings for the subtask app.
 """
 from django.urls import (
-    path,
     include,
+    path,
 )
-
 from rest_framework.routers import DefaultRouter
 
 from subtask import views

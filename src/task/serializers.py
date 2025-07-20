@@ -1,12 +1,12 @@
 """
 Serializers for Task APIs
 """
-from contact.serializers import ContactSerializer
 from rest_framework import serializers
 
-from core.models import Task, Contact, Subtask, Category, List
-from subtask.serializers import SubtaskSerializer
 from category.serializers import CategorySerializer
+from contact.serializers import ContactSerializer
+from core.models import Category, Contact, List, Subtask, Task
+from subtask.serializers import SubtaskSerializer
 
 
 class TaskSerializer(serializers.ModelSerializer):

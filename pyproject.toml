@@ -3,10 +3,10 @@ plugins = ["mypy_django_plugin.main"]
 strict = true
 show_column_numbers = true
 files = "src"
-exclude = "migrations"
+exclude = ["migrations", "__pycache__"]
 
 [tool.django-stubs]
-django_settings_module = "src.app.settings"
+django_settings_module = "app.settings"
 
 [tool.black]
 line-length = 88
@@ -35,3 +35,5 @@ django-settings-module = "src.app.settings"
 [tool.isort]
 profile = "black"
 line_length = 88
+skip = ["migrations", "venv", ".venv", "__pycache__"]
+skip_glob = ["*/migrations/*", "*.venv/*"]

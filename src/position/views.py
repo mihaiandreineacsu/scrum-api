@@ -1,10 +1,11 @@
 """
 Abstract Views for the position APIs.
 """
-from position.position_exception import PositionException
-from rest_framework import viewsets, status
-from django.db.models import Max
 from django.db import IntegrityError
+from django.db.models import Max
+from rest_framework import status, viewsets
+
+from position.position_exception import PositionException
 
 
 class PositionViewSet(viewsets.ModelViewSet):

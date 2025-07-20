@@ -5,4 +5,12 @@
         "./src"
     ],
     "pylint.enabled": true,
+    "editor.defaultFormatter": "ms-python.pylint",
+    "python.analysis.include": [
+        "${workspaceFolder}/src"
+    ],
+    "python.analysis.exclude": [
+        "${workspaceFolder}/typings"
+    ],
+    "python.terminal.activateEnvInCurrentTerminal": true,
 }

@@ -2,20 +2,14 @@
 Tests for contact APIs.
 """
 from django.contrib.auth import get_user_model
+from django.db.models.functions import Lower
 from django.test import TestCase
 from django.urls import reverse
-
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from contact.serializers import ContactSerializer
 from core.models import Contact
-
-from contact.serializers import (
-    ContactSerializer
-)
-
-from django.db.models.functions import Lower
-
 
 CONTACTS_URL = reverse('contact:contact-list')
 

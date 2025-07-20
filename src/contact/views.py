@@ -1,15 +1,14 @@
 """
 Views for the contact APIs.
 """
-from rest_framework import viewsets, status
+from django.db.models.functions import Lower
+from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from core.models import Contact
 from contact import serializers
-
-from django.db.models.functions import Lower
+from core.models import Contact
 
 
 class ContactViewSet(viewsets.ModelViewSet):

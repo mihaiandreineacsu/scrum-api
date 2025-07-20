@@ -2,11 +2,12 @@
 Views for the summary APIs.
 """
 from django.db.models import Count, Max
-from core.models import Task
-from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from core.models import Task
 
 
 class SummaryView(APIView):

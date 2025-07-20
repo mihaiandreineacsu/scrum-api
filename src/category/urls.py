@@ -3,10 +3,9 @@ URL mappings for category API.
 """
 
 from django.urls import (
-    path,
     include,
+    path,
 )
-
 from rest_framework.routers import DefaultRouter
 
 from category import views

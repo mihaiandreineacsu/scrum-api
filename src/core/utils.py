@@ -1,7 +1,6 @@
-from FantasyNameGenerator import (
-    DnD, Stores, Pathfinder, Items
-)
 import random
+
+from FantasyNameGenerator import DnD, Items, Pathfinder, Stores
 
 OPTIONS = [
     Stores.Antique, Stores.Clothes, Stores.Enchanter, Stores.Alchemist,

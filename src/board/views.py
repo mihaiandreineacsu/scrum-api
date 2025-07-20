@@ -1,13 +1,13 @@
 """
 Views for the board APIs.
 """
+from django.db.models import Prefetch
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Prefetch
 
-from core.models import Board, List, Task
 from board import serializers
+from core.models import Board, List, Task
 
 
 class BoardViewSet(viewsets.ModelViewSet):
