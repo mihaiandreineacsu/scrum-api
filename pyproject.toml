@@ -1,0 +1,37 @@
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+strict = true
+show_column_numbers = true
+files = "src"
+exclude = "migrations"
+
+[tool.django-stubs]
+django_settings_module = "src.app.settings"
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+skip-string-normalization = false
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | env
+  | migrations
+  | __pycache__
+  | build
+  | dist
+)/
+'''
+
+[tool.pylint]
+max-line-length = 88
+load-plugins = ["pylint_django"]
+ignore = ["migrations", "venv", ".venv", "__pycache__"]
+django-settings-module = "src.app.settings"
+
+[tool.isort]
+profile = "black"
+line_length = 88
