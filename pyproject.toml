@@ -1,9 +1,107 @@
 [tool.mypy]
-plugins = ["mypy_django_plugin.main"]
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+warn_return_any = true
+warn_unused_configs = true
 strict = true
 show_column_numbers = true
 files = "src"
 exclude = ["migrations", "__pycache__"]
+explicit_package_bases = true
+
+[tool.pyright]
+include = ["src"]
+exclude = ["migrations", "__pycache__"]
+defineConstant = { DEBUG = true }
+
+analyzeUnannotatedFunctions = true
+disableBytesTypePromotions = true
+strictParameterNoneValue = true
+enableTypeIgnoreComments = true
+enableReachabilityAnalysis = true
+strictListInference = true
+strictDictionaryInference = true
+strictSetInference = true
+deprecateTypingAliases = true
+enableExperimentalFeatures = false
+
+reportMissingImports = "error"
+reportMissingTypeStubs = false
+reportMissingParameterType = "error"
+reportMissingTypeArgument = "error"
+reportMissingModuleSource = "error"
+reportUnknownParameterType = "error"
+reportUnknownArgumentType = "error"
+reportUnknownVariableType = "error"
+reportUnknownMemberType = "information"
+reportUnknownLambdaType = "error"
+reportUntypedBaseClass = "error"
+reportUntypedNamedTuple = "error"
+reportUntypedFunctionDecorator = "error"
+reportUntypedClassDecorator = "error"
+
+reportReturnType = "error"
+reportFunctionReturnType = "error"
+reportAssignmentType = "error"
+reportArgumentType = "error"
+reportAttributeAccessIssue = "error"
+reportCallIssue = "error"
+reportIncompatibleMethodOverride = "error"
+reportIncompatibleVariableOverride = "error"
+reportInvalidTypeArguments = "error"
+reportInvalidTypeForm = "error"
+reportOptionalCall = "error"
+reportOptionalContextManager = "error"
+reportOptionalIterable = "error"
+reportOptionalMemberAccess = "error"
+reportOptionalOperand = "error"
+reportOptionalSubscript = "error"
+reportOperatorIssue = "error"
+reportOverlappingOverload = "error"
+reportPossiblyUnboundVariable = "error"
+reportUnboundVariable = "error"
+reportAssertTypeFailure = "error"
+reportAssertAlwaysTrue = "error"
+reportInvalidStringEscapeSequence = "error"
+reportInvalidTypeVarUse = "error"
+reportInvalidStubStatement = "error"
+reportIncompleteStub = "error"
+reportConstantRedefinition = "error"
+
+reportPrivateUsage = "error"
+reportPrivateImportUsage = "error"
+reportDuplicateImport = "error"
+reportShadowedImports = "error"
+reportUnusedImport = "error"
+reportUnusedFunction = "error"
+reportUnusedClass = "error"
+reportUnusedVariable = "error"
+reportUnusedExpression = "error"
+reportUnusedExcept = "error"
+reportUnusedCallResult = "error"
+reportUnnecessaryCast = "error"
+reportUnnecessaryComparison = "error"
+reportUnnecessaryContains = "error"
+reportUnnecessaryIsInstance = "error"
+reportUnnecessaryTypeIgnoreComment = "error"
+reportImplicitOverride = "error"
+reportDeprecated = "error"
+reportAbstractUsage = "error"
+reportNoOverloadImplementation = "error"
+reportMatchNotExhaustive = "error"
+reportSelfClsParameterName = "error"
+reportTypedDictNotRequiredAccess = "error"
+reportPropertyTypeMismatch = "error"
+reportUnhashable = "error"
+reportWildcardImportFromLibrary = "error"
+reportFunctionMemberAccess = "error"
+reportIndexIssue = "error"
+reportGeneralTypeIssues = "error"
+reportInconsistentOverload = "error"
+reportImportCycles = "error"
+reportInconsistentConstructor = "error"
+reportMissingSuperCall = "error"
+reportUninitializedInstanceVariable = "error"
+reportUnreachable = "error"
 
 [tool.django-stubs]
 django_settings_module = "app.settings"
@@ -31,6 +129,8 @@ max-line-length = 88
 load-plugins = ["pylint_django"]
 ignore = ["migrations", "venv", ".venv", "__pycache__"]
 django-settings-module = "app.settings"
+disable = ["W0511", "C0114", "C0115", "C0116"]
+
 
 [tool.isort]
 profile = "black"

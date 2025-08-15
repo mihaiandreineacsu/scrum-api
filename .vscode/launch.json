@@ -1,22 +1,35 @@
 {
-  "version": "0.2.0",
-  "configurations": [
-      {
-          "name": "Python: Remote Attach",
-          "type": "debugpy",
-          "request": "attach",
-          "connect": {
-              "host": "localhost",
-              "port": 5678
-          },
-          "pathMappings": [
-              {
-                  "localRoot": "${workspaceFolder}/app",
-                  "remoteRoot": "/app"
-              }
-          ],
-          "justMyCode": false,
-          "django": true,
-      }
-  ]
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Django Test",
+            "type": "debugpy",
+            "request": "launch",
+            "args": [
+                "test",
+                "user.tests.test_user_api.ImageUploadTests.test_upload_image"
+            ],
+            "justMyCode": false,
+            "django": true,
+            "autoStartBrowser": false,
+            "program": "${workspaceFolder}\\src\\manage.py"
+        },
+        {
+            "name": "Python: Remote Attach",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}/app",
+                    "remoteRoot": "/app"
+                }
+            ],
+            "justMyCode": false,
+            "django": true,
+        }
+    ]
 }

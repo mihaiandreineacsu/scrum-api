@@ -1,16 +1,18 @@
 {
-    "python.languageServer": "Pylance",
+    //"pylint.enabled": true,
+    // "python.languageServer": "Pylance",
     "editor.formatOnSave": true,
-    "python.analysis.extraPaths": [
-        "./src"
+    "black-formatter.args": [
+        "--config=pyproject.toml"
     ],
-    "pylint.enabled": true,
     "editor.defaultFormatter": "ms-python.black-formatter",
-    "python.analysis.include": [
-        "${workspaceFolder}/src"
-    ],
-    "python.analysis.exclude": [
-        "${workspaceFolder}/typings"
-    ],
     "python.terminal.activateEnvInCurrentTerminal": true,
+    // "pylint.cwd": "${workspaceFolder}/src",
+    // "pylint.importStrategy": "fromEnvironment",
+    // "python.analysis.typeCheckingMode": "strict", // or "strict" for more thorough checks
+    // "python.analysis.autoSearchPaths": true,
+    // "python.analysis.useLibraryCodeForTypes": true,
+    "python.envFile": "${workspaceFolder}/.env",
+    "pylint.cwd": "${workspaceFolder}/src",
+    "python-envs.pythonProjects": [],
 }
