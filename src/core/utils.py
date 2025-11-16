@@ -1,63 +1,15 @@
 import random
+import re
+from typing import cast
 
-from FantasyNameGenerator import DnD, Items, Pathfinder, Stores
+from FantasyNameGenerator import Base, DnD, Pathfinder
 
-OPTIONS = [
-    Stores.Antique,
-    Stores.Clothes,
-    Stores.Enchanter,
-    Stores.Alchemist,
-    Stores.Restaurant,
-    Stores.Jeweller,
-    Stores.Blacksmith,
-    Stores.General,
-    Stores.Town,
-    Stores.Brothel,
-    Stores.Gunsmith,
-    Stores.Guild,
-    Items.Relic,
-    Items.Weapon,
-    DnD.Aarakocra,
-    DnD.Aasimer,
-    DnD.Bugbear,
-    DnD.Centaur,
-    DnD.Changeling,
-    DnD.Dragonborn,
-    DnD.Drow,
-    DnD.Duergar,
-    DnD.Dwarf,
-    DnD.Elf,
-    DnD.Fetchling,
-    DnD.Firbolg,
-    DnD.Genasi,
-    DnD.Gith,
-    DnD.Gnome,
-    DnD.Goblin,
-    DnD.Goliath,
-    DnD.Halfling,
-    DnD.Hobgoblin,
-    DnD.Human,
-    DnD.Kalashtar,
-    DnD.Kenku,
-    DnD.Kobold,
-    DnD.Lizardfolk,
-    DnD.Loxodon,
-    DnD.Minotaur,
-    DnD.Orc,
-    DnD.Shifter,
-    DnD.Svirfneblin,
-    DnD.Tabaxi,
-    DnD.Tiefling,
-    DnD.Tortle,
-    DnD.Triton,
-    DnD.Vedalken,
-    DnD.Warforged,
+PATH_FINDERS: list[type[Base.Character]] = [
     Pathfinder.Anadi,
     Pathfinder.Android,
     Pathfinder.Automaton,
     Pathfinder.Azarketi,
     Pathfinder.Catfolk,
-    Pathfinder.Character,
     Pathfinder.Conrasu,
     Pathfinder.Dhampir,
     Pathfinder.Dwarf,
@@ -99,8 +51,59 @@ OPTIONS = [
     Pathfinder.Vanara,
     Pathfinder.Vishkanya,
 ]
+DNDS: list[type[Base.Character]] = [
+    DnD.Aarakocra,
+    DnD.Aasimer,
+    DnD.Bugbear,
+    DnD.Centaur,
+    DnD.Changeling,
+    DnD.Dragonborn,
+    DnD.Drow,
+    DnD.Duergar,
+    DnD.Dwarf,
+    DnD.Elf,
+    DnD.Fetchling,
+    DnD.Firbolg,
+    DnD.Genasi,
+    DnD.Gith,
+    DnD.Gnome,
+    DnD.Goblin,
+    DnD.Goliath,
+    DnD.Halfling,
+    DnD.Hobgoblin,
+    DnD.Human,
+    DnD.Kalashtar,
+    DnD.Kenku,
+    DnD.Kobold,
+    DnD.Lizardfolk,
+    DnD.Loxodon,
+    DnD.Minotaur,
+    DnD.Orc,
+    DnD.Shifter,
+    DnD.Svirfneblin,
+    DnD.Tabaxi,
+    DnD.Tiefling,
+    DnD.Tortle,
+    DnD.Triton,
+    DnD.Vedalken,
+    DnD.Warforged,
+]
+OPTIONS: list[type[Base.Character]] = [*PATH_FINDERS, *DNDS]
+
+PRIORITY_CHOICES = [("Urgent", "Urgent"), ("Medium", "Medium"), ("Low", "Low")]
 
 
-def generate_name():
+def generate_name() -> str:
+    """Random pick a generated FantasyName"""
     option = random.choice(OPTIONS)
-    return option.generate()
+    return cast(str, option.generate())
+
+
+def normalize_spacing(value: str) -> str:
+    """Normalize string by stripping and reducing spaces."""
+    return re.sub(r"\s+", " ", value.strip())
+
+
+def remove_spacing(value: str) -> str:
+    """Normalize string by removing spaces."""
+    return re.sub(r"\s+", "", value.strip())

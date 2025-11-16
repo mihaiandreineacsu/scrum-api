@@ -2,13 +2,17 @@
 Serializers for Category APIs
 """
 
-from rest_framework import serializers
+from typing import Any
+from rest_framework.serializers import ModelSerializer
+from rest_framework.utils.serializer_helpers import ReturnDict
 
 from core.models import Category
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(ModelSerializer[Category]):
     """Serializer for categories."""
+
+    data: ReturnDict[str, Any]
 
     class Meta:
         model = Category

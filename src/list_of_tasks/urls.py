@@ -8,10 +8,10 @@ from django.urls import (
 )
 from rest_framework.routers import DefaultRouter
 
-from list import views
+from list_of_tasks import views
 
 router = DefaultRouter()
-router.register("lists", views.ListViewSet)
+router.register("lists", views.ListViewSet, basename="list")
 
 app_name = "list"
 

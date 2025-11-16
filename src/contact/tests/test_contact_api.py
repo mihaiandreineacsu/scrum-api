@@ -2,190 +2,125 @@
 Tests for contact APIs.
 """
 
-from django.contrib.auth import get_user_model
+from typing import override
+
 from django.db.models.functions import Lower
-from django.test import TestCase
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APIClient
+from django.db.models.query import QuerySet
 
 from contact.serializers import ContactSerializer
 from core.models import Contact
-
-CONTACTS_URL = reverse("contact:contact-list")
-
-
-def create_contact(user, **params):
-    """Create and return a sample contact."""
-    email = params.get("email", "contact@mail.com")
-    defaults = {
-        "email": email,
-        "phone_number": "0157777777777",
-        "name": "Contact Name",
-    }
-    defaults.update(params)
-
-    contact = Contact.objects.create(user=user, **defaults)
-    return contact
+from core.tests.utils import (
+    TEST_OTHER_CONTACT_EMAIL,
+    TEST_OTHER_CONTACT_FULL_NAME,
+    TEST_OTHER_CONTACT_PHONE_NUMBER,
+    create_test_contact,
+)
+from core.tests.api_test_case import PrivateAPITestCase, PublicAPITestCase
 
 
-def detail_url(contact_id):
-    """Create and return a contact detail URL."""
-    return reverse("contact:contact-detail", args=[contact_id])
-
-
-def create_user(**params):
-    """Create and return a new user."""
-    return get_user_model().objects.create_user(**params)
-
-
-class PublicContactAPITests(TestCase):
+class PublicContactAPITests(PublicAPITestCase):
     """Test unauthenticated API requests."""
 
-    def setUp(self):
-        self.client = APIClient()
+    VIEW_NAME = "contact"
 
     def test_auth_required(self):
-        """Test auth is required to call API."""
-        res = self.client.get(CONTACTS_URL)
-
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assert_auth_required()
 
 
-class PrivateContactAPITests(TestCase):
+class PrivateContactAPITests(PrivateAPITestCase):
     """Test authenticated API requests."""
 
-    def setUp(self):
-        self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            "user@example.com",
-            "testpass123",
-        )
-        self.client.force_authenticate(self.user)
+    user_contact = Contact()
+    other_user_contact = Contact()
 
-    def test_retrieve_contacts(self):
-        """Test retrieving a list of contacts."""
-        create_contact(user=self.user)
-        create_contact(
-            user=self.user,
-            email="contact2@mail.com",
-            name="MyContact",
-            phone_number="7777777",
-        )
+    api_model = Contact
+    api_serializer = ContactSerializer
 
-        res = self.client.get(CONTACTS_URL)
+    ordering = Lower("name")
 
-        contacts = Contact.objects.all().order_by(Lower("name"))
-        serializer = ContactSerializer(contacts, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+    VIEW_NAME = "contact"
 
-    def test_retrieve_contact(self):
-        """Test retrieving a list of contacts."""
-        contact = create_contact(user=self.user)
-        url = detail_url(contact.id)
-        res = self.client.get(url)
+    queryset: QuerySet[Contact, Contact] = Contact.objects.all()
 
-        serializer = ContactSerializer(contact)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
-
-    def test_contact_list_limited_to_user(self):
-        """Test list of contacts is limited to authenticated user."""
-        other_user = get_user_model().objects.create_user(
-            "other@example.com",
-            "testpass123",
-        )
-        create_contact(user=other_user)
-        create_contact(user=self.user, email="contact2@mail.com")
-
-        res = self.client.get(CONTACTS_URL)
-
-        contacts = Contact.objects.filter(user=self.user)
-        serializer = ContactSerializer(contacts, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user_contact = create_test_contact(user=self.user)
+        self.other_user_contact = create_test_contact(user=self.other_user)
 
     def test_create_contact(self):
         """Test creating a contact."""
         payload = {
-            "email": "contact@mail.com",
-            "name": "Contact Name",
-            "phone_number": "0157336911111",
+            "email": TEST_OTHER_CONTACT_EMAIL,
+            "name": TEST_OTHER_CONTACT_FULL_NAME,
+            "phone_number": TEST_OTHER_CONTACT_PHONE_NUMBER,
+            "user": self.other_user.pk,
         }
-        res = self.client.post(CONTACTS_URL, payload)
+        self.assert_create_model(payload)
 
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        contact = Contact.objects.get(id=res.data["id"])
-        for k, v in payload.items():
-            self.assertEqual(getattr(contact, k), v)
-        self.assertEqual(contact.user, self.user)
+    def test_retrieve_contacts(self):
+        """Test retrieving contacts."""
+        self.assert_retrieve_models()
+
+    def test_retrieve_contact(self):
+        """Test retrieving contact."""
+        self.assert_retrieve_model(self.user_contact.pk)
 
     def test_partial_update(self):
-        """Test partial update if a contact."""
-        contact = create_contact(
-            user=self.user,
-            email="contact@mail.com",
-        )
-
-        payload = {"email": "contact2@mail.com"}
-        url = detail_url(contact.id)
-        res = self.client.patch(url, payload)
-
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        contact.refresh_from_db()
-        self.assertEqual(contact.email, payload["email"])
-        self.assertEqual(contact.user, self.user)
+        """Test partial update a contact."""
+        updates = [
+            {"email": TEST_OTHER_CONTACT_EMAIL, "user": self.other_user.pk},
+            {"name": TEST_OTHER_CONTACT_FULL_NAME, "user": self.other_user.pk},
+            {
+                "phone_number": TEST_OTHER_CONTACT_PHONE_NUMBER,
+                "user": self.other_user.pk,
+            },
+        ]
+        for update in updates:
+            self.assert_update_model(update, self.user_contact, partial_update=True)
 
     def test_full_update(self):
         """Test full update of contact."""
-        contact = create_contact(
-            user=self.user,
-        )
-
         payload = {
-            "email": "contact2@mail.com",
-            "name": "Contact2 Name",
-            "phone_number": "015733691236",
+            "email": TEST_OTHER_CONTACT_EMAIL,
+            "name": TEST_OTHER_CONTACT_FULL_NAME,
+            "phone_number": TEST_OTHER_CONTACT_PHONE_NUMBER,
+            "user": self.other_user.pk,
         }
-        url = detail_url(contact.id)
-        res = self.client.put(url, payload)
-
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        contact.refresh_from_db()
-        for k, v in payload.items():
-            self.assertEqual(getattr(contact, k), v)
-        self.assertEqual(contact.user, self.user)
-
-    def test_update_user_returns_error(self):
-        """test changing the contact user results in an error."""
-        new_user = create_user(email="user2@example.com", password="test123")
-        contact = create_contact(user=self.user)
-
-        payload = {"user": new_user.id}
-        url = detail_url(contact.id)
-        self.client.patch(url, payload)
-
-        contact.refresh_from_db()
-        self.assertEqual(contact.user, self.user)
+        self.assert_update_model(payload, self.user_contact)
 
     def test_deleting_contact(self):
         """Test deleting a contact successful."""
-        contact = create_contact(user=self.user)
+        self.assert_deleting_model(self.user_contact)
 
-        url = detail_url(contact.id)
-        res = self.client.delete(url)
-
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Contact.objects.filter(id=contact.id).exists())
-
-    def test_contact_other_users_contact_error(self):
+    def test_deleting_other_user_contact_error(self):
         """Test trying to delete another users contact gives error."""
-        new_user = create_user(email="user2@example.com", password="test123")
-        contact = create_contact(user=new_user)
+        self.assert_deleting_other_user_model_error(self.other_user_contact)
 
-        url = detail_url(contact.id)
-        res = self.client.delete(url)
+    def test_full_updating_other_user_contact_error(self):
+        """Test trying to put another users contact gives error."""
+        payload = {
+            "email": TEST_OTHER_CONTACT_EMAIL,
+            "name": TEST_OTHER_CONTACT_FULL_NAME,
+            "phone_number": TEST_OTHER_CONTACT_PHONE_NUMBER,
+            "user": self.user.pk,
+        }
+        self.assert_updating_other_user_model_error(payload, self.other_user_contact)
 
-        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertTrue(Contact.objects.filter(id=contact.id).exists())
+    def test_partial_update_other_user_contact_error(self) -> None:
+        """Test trying to patch another user's contact gives error."""
+
+        updates = [
+            {"email": TEST_OTHER_CONTACT_EMAIL, "user": self.user.pk},
+            {"name": TEST_OTHER_CONTACT_FULL_NAME, "user": self.user.pk},
+            {"phone_number": TEST_OTHER_CONTACT_PHONE_NUMBER, "user": self.user.pk},
+        ]
+
+        for update in updates:
+            self.assert_updating_other_user_model_error(
+                update, self.other_user_contact, partial_update=True
+            )
+
+    def test_retrieve_other_user_contact_error(self):
+        """Test trying to retrieve another users contact gives error."""
+        self.assert_retrieve_other_user_model_error(self.other_user_contact.pk)

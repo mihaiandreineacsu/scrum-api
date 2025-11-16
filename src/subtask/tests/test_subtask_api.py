@@ -2,201 +2,130 @@
 Tests for subtask APIs.
 """
 
-import json
-from datetime import date
+# TODO: Test also changing task for a diff user scenario
+from typing import override
 
-from django.contrib.auth import get_user_model
-from django.test import TestCase
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APIClient
-
-from core import models
-from core.models import Subtask
+from core.models import Subtask, Task
+from core.tests.api_test_case import PrivateAPITestCase, PublicAPITestCase
+from core.tests.utils import (
+    create_test_subtask,
+    create_test_task,
+)
 from subtask.serializers import SubtaskSerializer
 
-SUBTASKS_URL = reverse("subtask:subtask-list")
 
-
-def create_category(user, name="Category", color="#FF0000"):
-    """Create and return a new category"""
-    return models.Category.objects.create(user=user, name=name, color=color)
-
-
-def create_task(user, **params):
-    """Create and return a sample task."""
-    defaults = {
-        "title": "Sample task title",
-        "description": "Sample description",
-        "priority": "Low",
-        "due_date": date.today(),
-        "category": create_category(user=user),
-        "priority": "Low",
-    }
-    defaults.update(params)
-
-    task = models.Task.objects.create(user=user, **defaults)
-    return task
-
-
-def create_subtask(user, **params):
-    """Create and return a sample subtask."""
-    defaults = {
-        "title": "Sample task title",
-        "done": False,
-        "task": create_task(user=user),
-    }
-    defaults.update(params)
-
-    subtask = Subtask.objects.create(user=user, **defaults)
-    return subtask
-
-
-def detail_url(subtask_id):
-    """Create and return a subtask detail URL."""
-    return reverse("subtask:subtask-detail", args=[subtask_id])
-
-
-def create_user(**params):
-    """Create and return a new user."""
-    return get_user_model().objects.create_user(**params)
-
-
-class PublicSubtaskAPITests(TestCase):
+class PublicSubtaskAPITests(PublicAPITestCase):
     """Test unauthenticated API requests."""
 
-    def setUp(self):
-        self.client = APIClient()
+    VIEW_NAME = "subtask"
 
     def test_auth_required(self):
-        """Test auth is required to call API."""
-        res = self.client.get(SUBTASKS_URL)
-
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assert_auth_required()
 
 
-class PrivateSubtaskAPITests(TestCase):
+class PrivateSubtaskAPITests(PrivateAPITestCase):
     """Test authenticated API requests."""
 
-    def setUp(self):
-        self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            "user@example.com",
-            "testpass123",
+    user_subtask = Subtask()
+    user_task = Task()
+    other_user_subtask = Subtask()
+    other_user_task = Task()
+
+    api_model = Subtask
+    api_serializer = SubtaskSerializer
+    VIEW_NAME = "subtask"
+
+    queryset = Subtask.objects.all()
+
+    @override
+    def get_queryset(self):
+        return self.queryset.filter(
+            task__list_of_tasks__board__user=self.user
+        ).order_by(self.ordering)
+
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user_task = create_test_task(user=self.user)
+        self.user_subtask = create_test_subtask(user=self.user, task=self.user_task)
+        self.other_user_task = create_test_task(user=self.other_user)
+        self.other_user_subtask = create_test_subtask(
+            user=self.other_user, task=self.other_user_task
         )
-        self.client.force_authenticate(self.user)
-
-    def test_retrieve_subtasks(self):
-        """Test retrieving a list of subtasks."""
-        create_subtask(user=self.user)
-        create_subtask(user=self.user, title="Other")
-
-        res = self.client.get(SUBTASKS_URL)
-
-        subtasks = Subtask.objects.all().order_by("-id")
-        serializer = SubtaskSerializer(subtasks, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
-
-    def test_subtask_list_limited_to_user(self):
-        """Test list of subtasks is limited to authenticated user."""
-        other_user = get_user_model().objects.create_user(
-            "other@example.com",
-            "testpass123",
-        )
-        create_subtask(user=other_user)
-        create_subtask(user=self.user, title="My Subtask")
-
-        res = self.client.get(SUBTASKS_URL)
-
-        subtasks = Subtask.objects.filter(user=self.user).order_by("-id")
-        serializer = SubtaskSerializer(subtasks, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
 
     def test_create_subtask(self):
         """Test creating a subtask."""
-        task = create_task(user=self.user)
         payload = {
             "title": "New Subtask",
             "done": False,
-            "task": task.id,
-            "user": self.user.id,
+            "task": self.user_subtask.task.pk,
+            "user": self.other_user.pk,
         }
-        res = self.client.post(SUBTASKS_URL, payload)
+        self.assert_create_model(payload)
 
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        subtask = Subtask.objects.get(id=res.data["id"])
-        for k, v in payload.items():
-            if k == "task" or k == "user":  # Special handling for the ForeignKey field
-                self.assertEqual(getattr(subtask, k).id, v)
-            else:
-                self.assertEqual(getattr(subtask, k), v)
-        self.assertEqual(subtask.user, self.user)
+    def test_retrieve_subtasks(self):
+        """Test retrieving subtasks."""
+        self.assert_retrieve_models()
+
+    def test_retrieve_subtask(self):
+        """Test retrieving subtask."""
+        self.assert_retrieve_model(self.user_subtask.pk)
 
     def test_partial_update(self):
-        """Test partial update if a subtask."""
-        subtask = create_subtask(
-            user=self.user,
-            title="Subtask Title",
-        )
+        """Test partial update a subtask."""
 
-        payload = {"title": "Subtask Title Updated"}
-        url = detail_url(subtask.id)
-        res = self.client.patch(url, payload)
+        updates = [
+            {"task": self.user_task.pk, "user": self.other_user.pk},  # TODO: is broken
+            {
+                "title": "Re-Write a unit test for the broken",
+                "user": self.other_user.pk,
+            },
+            {"done": True, "user": self.other_user.pk},
+        ]
 
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        subtask.refresh_from_db()
-        self.assertEqual(subtask.title, payload["title"])
-        self.assertEqual(subtask.user, self.user)
+        for update in updates:
+            self.assert_update_model(update, self.user_subtask, partial_update=True)
 
     def test_full_update(self):
         """Test full update of subtask."""
-        task = create_task(user=self.user)
-        subtask = create_subtask(
-            user=self.user,
-        )
-
-        payload = {"title": "Subtask full update", "done": True, "task": task.id}
-        url = detail_url(subtask.id)
-        res = self.client.put(url, json.dumps(payload), content_type="application/json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        subtask.refresh_from_db()
-        for k, v in payload.items():
-            if k != "task":
-                self.assertEqual(getattr(subtask, k), v)
-        self.assertEqual(subtask.task.id, task.id)
-        self.assertEqual(subtask.user, self.user)
-
-    def test_update_user_returns_error(self):
-        """test changing the subtask user results in an error."""
-        new_user = create_user(email="user2@example.com", password="test123")
-        subtask = create_subtask(user=self.user)
-
-        payload = {"user": new_user.id}
-        url = detail_url(subtask.id)
-        self.client.patch(url, payload)
-
-        subtask.refresh_from_db()
-        self.assertEqual(subtask.user, self.user)
+        payload = {
+            "task": self.user_task.pk,
+            "title": "Re-Write a unit test for the broken",
+            "user": self.other_user.pk,
+        }
+        self.assert_update_model(payload, self.user_subtask)
 
     def test_deleting_subtask(self):
         """Test deleting a subtask successful."""
-        subtask = create_subtask(user=self.user)
+        self.assert_deleting_model(self.user_subtask)
 
-        url = detail_url(subtask.id)
-        res = self.client.delete(url)
-
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Subtask.objects.filter(id=subtask.id).exists())
-
-    def test_subtask_other_users_subtask_error(self):
+    def test_deleting_other_user_subtask_error(self):
         """Test trying to delete another users subtask gives error."""
-        new_user = create_user(email="user2@example.com", password="test123")
-        subtask = create_subtask(user=new_user)
+        self.assert_deleting_other_user_model_error(self.other_user_subtask)
 
-        url = detail_url(subtask.id)
-        res = self.client.delete(url)
+    def test_full_updating_other_user_subtask_error(self):
+        """Test trying to put another users subtask gives error."""
+        payload = {
+            "title": "Re-Write a unit test for the broken",
+            "task": self.user_task.pk,
+            "user": self.user.pk,
+        }
+        self.assert_updating_other_user_model_error(payload, self.other_user_subtask)
 
-        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertTrue(Subtask.objects.filter(id=subtask.id).exists())
+    def test_partial_update_other_user_subtask_error(self):
+        """Test trying to patch another users subtask gives error."""
+
+        updates = [
+            {"title": "Re-Write a unit test for the broken", "user": self.user.pk},
+            {"task": self.user_task.pk, "user": self.user.pk},
+            {"done": True, "user": self.user.pk},
+        ]
+
+        for update in updates:
+            self.assert_updating_other_user_model_error(
+                update, self.other_user_subtask, partial_update=True
+            )
+
+    def test_retrieve_other_user_subtask_error(self):
+        """Test trying to retrieve another users subtask gives error."""
+        self.assert_retrieve_other_user_model_error(self.other_user_subtask)

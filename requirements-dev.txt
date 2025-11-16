@@ -7,3 +7,6 @@ pylint==3.3.7
 pylint-django==2.6.1
 types-psycopg2==2.9.21.20250718
 pyright==1.1.403
+coverage==7.11.3
+pytest==9.0.1
+pytest-django==4.11.1

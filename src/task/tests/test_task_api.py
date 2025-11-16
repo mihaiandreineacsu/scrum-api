@@ -2,301 +2,234 @@
 Tests for task APIs.
 """
 
-import json
 from datetime import date
+from typing import override
 
-from django.contrib.auth import get_user_model
-from django.test import TestCase
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APIClient
-
-from core.models import Category, Contact, Subtask, Task
+from core.models import Category, Contact, ListOfTasks, Subtask, Task
+from core.tests.utils import (
+    TEST_OTHER_CONTACT_EMAIL,
+    TEST_OTHER_CONTACT_FULL_NAME,
+    TEST_OTHER_CONTACT_PHONE_NUMBER,
+    create_test_category,
+    create_test_contact,
+    create_test_list_of_tasks,
+    create_test_subtask,
+    create_test_task,
+)
+from core.tests.api_test_case import (
+    PrivateAPITestCase,
+    PublicAPITestCase,
+)
 from task.serializers import TaskSerializer
 
-TASKS_URL = reverse("task:task-list")
 
-
-class MockRequest:
-    def __init__(self, user):
-        self.user = user
-
-
-def create_subtask(user, **params):
-    """Create and return a sample subtask"""
-    defaults = {"title": "Some Subtask", "done": False, "task": create_task(user=user)}
-    defaults.update(params)
-    subtask = Subtask.objects.create(user=user, **defaults)
-    return subtask
-
-
-def create_subtask_payload(**params):
-    """Create and return a sample subtask"""
-    defaults = {"title": "Some Subtask", "done": False}
-    defaults.update(params)
-    return defaults
-
-
-def create_contact(user, **params):
-    """Create and return a sample contact."""
-    email = params.get("email", "contact@mail.com")
-    defaults = {
-        "email": email,
-        "phone_number": "0157777777777",
-        "name": "Contact Name",
-    }
-    defaults.update(params)
-
-    contact = Contact.objects.create(user=user, **defaults)
-    return contact
-
-
-def create_category(user, **params):
-    """Create and return a sample category."""
-    name = params.get("name", "Some Category Name")
-    color = params.get("color", "#FFFFFF")
-    defaults = {
-        "name": name,
-        "color": color,
-    }
-    defaults.update(params)
-
-    category = Category.objects.create(user=user, **defaults)
-    return category
-
-
-def create_task(user, **params):
-    """Create and return a sample task."""
-    defaults = {
-        "title": "Sample task title",
-        "description": "Sample description",
-        "priority": "Low",
-        "due_date": date.today(),
-        "category": create_category(user=user),
-        "priority": "Low",
-    }
-    defaults.update(params)
-
-    task = Task.objects.create(user=user, **defaults)
-    return task
-
-
-def detail_url(task_id):
-    """Create and return a task detail URL."""
-    return reverse("task:task-detail", args=[task_id])
-
-
-def create_user(**params):
-    """Create and return a new user."""
-    return get_user_model().objects.create_user(**params)
-
-
-class PublicTaskAPITests(TestCase):
+class PublicTaskAPITests(PublicAPITestCase):
     """Test unauthenticated API requests."""
 
-    def setUp(self):
-        self.client = APIClient()
+    VIEW_NAME = "task"
 
     def test_auth_required(self):
-        """Test auth is required to call API."""
-        res = self.client.get(TASKS_URL)
-
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assert_auth_required()
 
 
-class PrivateTaskAPITests(TestCase):
+class PrivateTaskAPITests(PrivateAPITestCase):
     """Test authenticated API requests."""
 
-    def setUp(self):
-        self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            "user@example.com",
-            "testpass123",
+    user_task = Task()
+    user_category = Category()
+    user_list_of_tasks = ListOfTasks()
+    user_contact = Contact()
+    user_subtask = Subtask()
+
+    other_user_task = Task()
+    other_user_category = Category()
+    other_user_list_of_tasks = ListOfTasks()
+    other_user_contact = Contact()
+    other_user_subtask = Subtask()
+
+    api_model = Task
+    api_serializer = TaskSerializer
+    VIEW_NAME = "task"
+
+    queryset = Task.objects.all()
+
+    @override
+    def get_queryset(self):
+        return self.queryset.filter(list_of_tasks__board__user=self.user).order_by(
+            self.ordering
         )
-        self.client.force_authenticate(self.user)
+
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user_list_of_tasks = create_test_list_of_tasks(user=self.user)
+        self.user_task = create_test_task(
+            user=self.user, list_of_tasks=self.user_list_of_tasks
+        )
+        self.user_category = create_test_category(user=self.user)
+        self.user_contact = create_test_contact(self.user)
+        self.user_subtask = create_test_subtask(
+            user=self.user, task=self.user_task
+        )  # TODO: Check if task is required
+
+        self.other_user_list_of_tasks = create_test_list_of_tasks(user=self.other_user)
+        self.other_user_task = create_test_task(
+            user=self.other_user, list_of_tasks=self.other_user_list_of_tasks
+        )
+        self.other_user_category = create_test_category(user=self.other_user)
+        self.other_user_contact = create_test_contact(self.other_user)
+        self.other_user_subtask = create_test_subtask(
+            user=self.other_user, task=self.other_user_task
+        )  # TODO: Check if task is required
 
     def test_create_task(self):
         """Test creating a task."""
-        category = create_category(user=self.user)
-        contact1 = create_contact(user=self.user)
-        contact2 = create_contact(
-            user=self.user,
-            name="Mihai",
-            phone_number="015777777888",
-            email="mihai@dev.com",
-        )
-        subtask1 = create_subtask_payload()
-        subtask2 = create_subtask_payload(title="Do this")
-        due_date = date.today()
         payload = {
-            "title": "Sample task title",
-            "description": "Sample description",
-            "category": category.id,
-            "assignees": [contact1.id, contact2.id],
+            "title": "Fix API Endpoint",
+            "description": "Task API is broken",
+            "category": self.user_category.pk,
+            "assignees": [self.user_contact.pk],
             "priority": "Low",
-            "due_date": due_date.isoformat(),
-            "subtasks": [subtask1, subtask2],
+            "due_date": date.today().isoformat(),
+            "subtasks": [{"title": "Write unit test", "done": False}],
+            "list_of_tasks": self.user_list_of_tasks.pk,
+            "user": self.other_user.pk,
         }
-        res = self.client.post(
-            TASKS_URL, json.dumps(payload), content_type="application/json"
-        )
-
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        task = Task.objects.get(id=res.data["id"])
-
-        for k, v in payload.items():
-            task_attr = getattr(task, k)
-            if (
-                k != "assignees"
-                and k != "subtasks"
-                and k != "category"
-                and k != "user"
-                and k != "due_date"
-            ):
-                self.assertEqual(task_attr, v)
-
-        # Check subtasks separately
-        created_subtasks = list(task.subtasks.all())
-        self.assertEqual(len(created_subtasks), len(payload["subtasks"]))
-        for subtask, expected_subtask in zip(created_subtasks, payload["subtasks"]):
-            self.assertEqual(subtask.title, expected_subtask["title"])
-            self.assertEqual(subtask.done, expected_subtask["done"])
-
-        self.assertEqual(task.due_date.isoformat(), due_date.isoformat())
-        self.assertEqual(list(task.assignees.all()), [contact1, contact2])
-        self.assertEqual(task.category, category)
-        self.assertEqual(task.user, self.user)
+        self.assert_create_model(payload)
 
     def test_retrieve_tasks(self):
         """Test retrieving a list of tasks."""
-        create_task(user=self.user, title="Some other Task")
-        create_task(user=self.user)
+        self.assert_retrieve_models()
 
-        res = self.client.get(TASKS_URL)
-
-        tasks = Task.objects.all().order_by("-position")
-        serializer = TaskSerializer(tasks, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data[0]["id"], serializer.data[0]["id"])
-        self.assertEqual(res.data[1]["id"], serializer.data[1]["id"])
-
-    def test_task_list_limited_to_user(self):
-        """Test list of tasks is limited to authenticated user."""
-        other_user = get_user_model().objects.create_user(
-            "other@example.com",
-            "testpass123",
-        )
-        create_task(user=other_user)
-        create_task(user=self.user)
-
-        res = self.client.get(TASKS_URL)
-
-        tasks = Task.objects.filter(user=self.user)
-        serializer = TaskSerializer(tasks, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+    def test_retrieve_task(self):
+        """Test retrieving tasks."""
+        self.assert_retrieve_model(self.user_task.pk)
 
     def test_partial_update(self):
-        """Test partial update if a task."""
-        task = create_task(
-            user=self.user,
-            title="Simple",
-        )
+        """Test partial update a task."""
 
-        payload = {"title": "New task title"}
-        url = detail_url(task.id)
-        res = self.client.patch(
-            url, json.dumps(payload), content_type="application/json"
-        )
+        updates = [
+            {"title": "Add new feature", "user": self.other_user.pk},
+            {"description": "Implement the new feature", "user": self.other_user.pk},
+            {
+                "category": create_test_category(self.user, "Feature", "#FFF000").pk,
+                "user": self.other_user.pk,
+            },
+            {
+                "assignees": [
+                    create_test_contact(
+                        self.user,
+                        TEST_OTHER_CONTACT_EMAIL,
+                        TEST_OTHER_CONTACT_FULL_NAME,
+                        TEST_OTHER_CONTACT_PHONE_NUMBER,
+                    ).pk
+                ],
+                "user": self.other_user.pk,
+            },
+            {"due_date": date.today().isoformat(), "user": self.other_user.pk},
+            {"priority": "Low", "user": self.other_user.pk},
+            {
+                "list_of_tasks": create_test_list_of_tasks(
+                    self.user, None, "IN PROGRESS"
+                ).pk,
+                "user": self.other_user.pk,
+            },
+        ]
 
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        task.refresh_from_db()
-        self.assertEqual(task.title, payload["title"])
-        self.assertEqual(task.user, self.user)
+        for update in updates:
+            self.assert_update_model(update, self.user_task, partial_update=True)
 
     def test_full_update(self):
         """Test full update of task."""
-        task = create_task(user=self.user)
-        category = create_category(user=self.user)
-        contact1 = create_contact(user=self.user)
-        contact2 = create_contact(
-            user=self.user,
-            name="Mihai",
-            phone_number="015777777888",
-            email="mihai@dev.com",
-        )
-        subtask1 = create_subtask_payload()
-        subtask2 = create_subtask_payload(title="Do this")
-        due_date = date.today()
-
         payload = {
-            "title": "Sample task title",
-            "description": "Sample description",
-            "category": category.id,
-            "assignees": [contact1.id, contact2.id],
+            "title": "Add new feature",
+            "description": "Implement the new feature",
+            "category": create_test_category(self.user, "Feature", "#FFF000").pk,
+            "assignees": [
+                create_test_contact(
+                    self.user,
+                    TEST_OTHER_CONTACT_EMAIL,
+                    TEST_OTHER_CONTACT_FULL_NAME,
+                    TEST_OTHER_CONTACT_PHONE_NUMBER,
+                ).pk
+            ],
+            "due_date": date.today().isoformat(),
             "priority": "Low",
-            "due_date": due_date.isoformat(),
-            "subtasks": [subtask1, subtask2],
+            "list_of_tasks": create_test_list_of_tasks(
+                self.user, None, "IN PROGRESS"
+            ).pk,
+            "user": self.other_user.pk,
         }
-        url = detail_url(task.id)
-        res = self.client.put(url, json.dumps(payload), content_type="application/json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-        for k, v in payload.items():
-            task_attr = getattr(task, k)
-            if (
-                k != "assignees"
-                and k != "subtasks"
-                and k != "category"
-                and k != "user"
-                and k != "due_date"
-            ):
-                self.assertEqual(task_attr, v)
-        self.assertEqual(task.due_date.isoformat(), due_date.isoformat())
-        self.assertEqual(list(task.assignees.all()), [contact1, contact2])
-        # Check subtasks separately
-        created_subtasks = list(task.subtasks.all())
-        self.assertEqual(len(created_subtasks), len(payload["subtasks"]))
-        for subtask, expected_subtask in zip(created_subtasks, payload["subtasks"]):
-            self.assertEqual(subtask.title, expected_subtask["title"])
-            self.assertEqual(subtask.done, expected_subtask["done"])
-        task.refresh_from_db()
-        self.assertEqual(task.category.id, category.id)
-        self.assertEqual(task.user, self.user)
-
-    def test_update_user_returns_error(self):
-        """test changing the the task user results in an error."""
-        new_user = create_user(email="user2@example.com", password="test123")
-        task = create_task(user=self.user)
-
-        payload = {"user": new_user.id}
-        url = detail_url(task.id)
-
-        self.client.patch(url, payload, content_type="application/json")
-        # res = self.client.patch(url, payload)
-        # it returns ok, but it was not updated
-        # self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        task.refresh_from_db()
-
-        self.assertEqual(task.user, self.user)
+        self.assert_update_model(payload, self.user_task)
 
     def test_deleting_task(self):
         """Test deleting a task successful."""
-        task = create_task(user=self.user)
+        # TODO: if task is deleted make sure subtasks references are also deleted
+        self.assert_deleting_model(self.user_task)
 
-        url = detail_url(task.id)
-        res = self.client.delete(url)
-
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Task.objects.filter(id=task.id).exists())
-
-    def test_task_other_users_task_error(self):
+    def test_deleting_other_user_task_error(self):
         """Test trying to delete another users task gives error."""
-        new_user = create_user(email="user2@example.com", password="test123")
-        task = create_task(user=new_user)
+        self.assert_deleting_other_user_model_error(self.other_user_task)
 
-        url = detail_url(task.id)
-        res = self.client.delete(url)
+    def test_full_updating_other_user_task_error(self):
+        """Test trying to put another users task gives error."""
+        payload = {
+            "title": "Add new feature",
+            "description": "Implement the new feature",
+            "category": create_test_category(self.user, "Feature", "#FFF000").pk,
+            "assignees": [
+                create_test_contact(
+                    self.user,
+                    TEST_OTHER_CONTACT_EMAIL,
+                    TEST_OTHER_CONTACT_FULL_NAME,
+                    TEST_OTHER_CONTACT_PHONE_NUMBER,
+                ).pk
+            ],
+            "due_date": date.today().isoformat(),
+            "priority": "Low",
+            "list_of_tasks": create_test_list_of_tasks(
+                self.user, None, "IN PROGRESS"
+            ).pk,
+            "user": self.user.pk,
+        }
+        self.assert_updating_other_user_model_error(payload, self.other_user_task)
 
-        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertTrue(Task.objects.filter(id=task.id).exists())
+    def test_partial_update_other_user_task_error(self):
+        """Test trying to patch another users task gives error."""
+
+        updates = [
+            {"title": "Add new feature", "user": self.user.pk},
+            {"description": "Implement the new feature", "user": self.user.pk},
+            {
+                "category": create_test_category(self.user, "Feature", "#FFF000").pk,
+                "user": self.user.pk,
+            },
+            {
+                "assignees": [
+                    create_test_contact(
+                        self.user,
+                        TEST_OTHER_CONTACT_EMAIL,
+                        TEST_OTHER_CONTACT_FULL_NAME,
+                        TEST_OTHER_CONTACT_PHONE_NUMBER,
+                    ).pk
+                ],
+                "user": self.user.pk,
+            },
+            {"due_date": date.today().isoformat(), "user": self.user.pk},
+            {"priority": "Low", "user": self.user.pk},
+            {
+                "list_of_tasks": create_test_list_of_tasks(
+                    self.user, None, "IN PROGRESS"
+                ).pk,
+                "user": self.user.pk,
+            },
+        ]
+
+        for update in updates:
+            self.assert_updating_other_user_model_error(
+                update, self.other_user_task, partial_update=True
+            )
+
+    def test_retrieve_other_user_task_error(self):
+        """Test trying to retrieve another users task gives error."""
+        self.assert_retrieve_other_user_model_error(self.other_user_task.pk)

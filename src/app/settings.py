@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 import os
 from pathlib import Path
+from typing import Any
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +22,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY", "django-insecure-^^=v5!lxtj9q+8ijx69eu&$jnn*mg^^7uv))c+#7*cjv=gmd3$"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG").lower() == "true"
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 
 # Application definition
@@ -50,10 +53,11 @@ INSTALLED_APPS = [
     "contact",
     "colorfield",
     "category",
-    "list",
-    "position",
+    "list_of_tasks",
     "corsheaders",
     "django_rest_passwordreset",
+    "phonenumber_field",
+    "ordered_model",
 ]
 
 MIDDLEWARE = [
@@ -69,7 +73,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "app.urls"
 
-TEMPLATES = [
+TEMPLATES: list[dict[str, Any]] = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
@@ -91,24 +95,25 @@ WSGI_APPLICATION = "app.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 # Determine if SQLite should be used based on the environment variable
-USE_SQLITE = os.environ.get("USE_SQLITE", "False").lower() == "true"
-if USE_SQLITE:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": os.path.join(os.path.dirname(__file__), "db.sqlite3"),
-        }
+USE_SQLITE = os.environ.get("USE_SQLITE", "True").lower() == "true"
+
+SQLITE_DB = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(os.path.dirname(__file__), "db.sqlite3"),
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "HOST": os.environ.get("DB_HOST"),
-            "NAME": os.environ.get("DB_NAME"),
-            "USER": os.environ.get("DB_USER"),
-            "PASSWORD": os.environ.get("DB_PASS"),
-        }
+}
+POSTGRES_DB = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": os.environ.get("DB_HOST", "scrum-api-db"),
+        "NAME": os.environ.get("DB_NAME", "scrumapidevdb"),
+        "USER": os.environ.get("DB_USER", "scrumapichangeme"),
+        "PASSWORD": os.environ.get("DB_PASS", "scrumapidevuser"),
     }
+}
+
+DATABASES = SQLITE_DB if USE_SQLITE else POSTGRES_DB
 
 
 # Password validation
@@ -116,7 +121,7 @@ else:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # pylint: disable=C0301
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -150,8 +155,8 @@ USE_TZ = True
 STATIC_URL = "/static/static/"
 MEDIA_URL = "/static/media/"
 
-MEDIA_ROOT = os.environ.get("MEDIA_ROOT")
-STATIC_ROOT = os.environ.get("STATIC_ROOT")
+MEDIA_ROOT = os.environ.get("MEDIA_ROOT", os.path.join(BASE_DIR, "media"))
+STATIC_ROOT = os.environ.get("STATIC_ROOT", os.path.join(BASE_DIR, "static"))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -172,7 +177,9 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
 }
 
-CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS").split(",")
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    "CORS_ALLOWED_ORIGINS", "http://localhost:4200,http://127.0.0.1:4200"
+).split(",")
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -184,7 +191,7 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = True
 # EMAIL_USE_SSL = False  # Use this for SSL (uncomment if needed, and adjust port)
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-DJANGO_REST_MULTITOKENAUTH_RESET_TOKEN_EXPIRY_TIME = 24  # Default
-DJANGO_REST_PASSWORDRESET_NO_INFORMATION_LEAKAGE = False  # Default
-DJANGO_REST_MULTITOKENAUTH_REQUIRE_USABLE_PASSWORD = True  # Default
-DJANGO_REST_LOOKUP_FIELD = "email"  # Default
+DJANGO_REST_MULTITOKENAUTH_RESET_TOKEN_EXPIRY_TIME = 24
+DJANGO_REST_PASSWORDRESET_NO_INFORMATION_LEAKAGE = False
+DJANGO_REST_MULTITOKENAUTH_REQUIRE_USABLE_PASSWORD = True
+DJANGO_REST_LOOKUP_FIELD = "email"

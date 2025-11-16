@@ -1,18 +1,21 @@
 {
-    //"pylint.enabled": true,
-    // "python.languageServer": "Pylance",
-    "editor.formatOnSave": true,
     "black-formatter.args": [
         "--config=pyproject.toml"
     ],
+    "cSpell.words": [
+        "modelfields",
+        "phonenumber",
+        "textsize"
+    ],
     "editor.defaultFormatter": "ms-python.black-formatter",
-    "python.terminal.activateEnvInCurrentTerminal": true,
-    // "pylint.cwd": "${workspaceFolder}/src",
-    // "pylint.importStrategy": "fromEnvironment",
-    // "python.analysis.typeCheckingMode": "strict", // or "strict" for more thorough checks
-    // "python.analysis.autoSearchPaths": true,
-    // "python.analysis.useLibraryCodeForTypes": true,
-    "python.envFile": "${workspaceFolder}/.env",
+    "editor.formatOnSave": true,
     "pylint.cwd": "${workspaceFolder}/src",
     "python-envs.pythonProjects": [],
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.testing.pytestArgs": [
+        "src"
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false
 }

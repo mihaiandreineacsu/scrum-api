@@ -5,10 +5,11 @@ Views for the summary APIs.
 from django.db.models import Count, Max
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.models import Task
+from core.models import Task, User
 
 
 class SummaryView(APIView):
@@ -17,9 +18,9 @@ class SummaryView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):
+    def get(self, request: Request):
         """Retrieve summary for authenticated user."""
-        user = request.user
+        user: User = request.user
         # Count tasks in each list and include list names and positions and get the latest due date for each
         tasks_in_lists = (
             Task.objects.filter(user=user)

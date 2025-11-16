@@ -5,40 +5,37 @@ warn_unused_configs = true
 strict = true
 show_column_numbers = true
 files = "src"
-exclude = ["migrations", "__pycache__"]
+exclude = ['^venv/', "^env/"]
 explicit_package_bases = true
+mypy_path = "stubs"
 
 [tool.pyright]
+pythonVersion = 3.13
 include = ["src"]
-exclude = ["migrations", "__pycache__"]
-defineConstant = { DEBUG = true }
+exclude = ["^venv/", "^env/"]
+extraPaths = ["src"]
+autoSearchPaths = true
 
-analyzeUnannotatedFunctions = true
-disableBytesTypePromotions = true
-strictParameterNoneValue = true
-enableTypeIgnoreComments = true
-enableReachabilityAnalysis = true
-strictListInference = true
-strictDictionaryInference = true
-strictSetInference = true
-deprecateTypingAliases = true
-enableExperimentalFeatures = false
+# Enable strict type checking
+strict = true
 
+# Type checking settings
 reportMissingImports = "error"
-reportMissingTypeStubs = false
+reportMissingTypeStubs = "error"
 reportMissingParameterType = "error"
 reportMissingTypeArgument = "error"
 reportMissingModuleSource = "error"
 reportUnknownParameterType = "error"
 reportUnknownArgumentType = "error"
 reportUnknownVariableType = "error"
-reportUnknownMemberType = "information"
+reportUnknownMemberType = "error"
 reportUnknownLambdaType = "error"
 reportUntypedBaseClass = "error"
 reportUntypedNamedTuple = "error"
 reportUntypedFunctionDecorator = "error"
 reportUntypedClassDecorator = "error"
 
+# Report settings
 reportReturnType = "error"
 reportFunctionReturnType = "error"
 reportAssignmentType = "error"
@@ -67,6 +64,7 @@ reportInvalidStubStatement = "error"
 reportIncompleteStub = "error"
 reportConstantRedefinition = "error"
 
+# Additional strictness settings
 reportPrivateUsage = "error"
 reportPrivateImportUsage = "error"
 reportDuplicateImport = "error"
@@ -103,8 +101,29 @@ reportMissingSuperCall = "error"
 reportUninitializedInstanceVariable = "error"
 reportUnreachable = "error"
 
+# Experimental and advanced settings
+enableTypeIgnoreComments = true
+enableReachabilityAnalysis = true
+strictListInference = true
+strictDictionaryInference = true
+strictSetInference = true
+deprecateTypingAliases = true
+enableExperimentalFeatures = false
+
+# Define constants
+defineConstant = { DEBUG = true }
+
+# Analyze unannotated functions
+analyzeUnannotatedFunctions = true
+
+# Disable bytes type promotions
+disableBytesTypePromotions = true
+
+# Strict parameter None value
+strictParameterNoneValue = true
+
 [tool.django-stubs]
-django_settings_module = "app.settings"
+django_settings_module = "src.app.settings"
 
 [tool.black]
 line-length = 88
@@ -137,3 +156,33 @@ profile = "black"
 line_length = 88
 skip = ["migrations", "venv", ".venv", "__pycache__"]
 skip_glob = ["*/migrations/*", "*.venv/*"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+exclude_also = [
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+
+    # Don't complain about abstract methods, they aren't run:
+    "@(abc\\.)?abstractmethod",
+    ]
+
+ignore_errors = true
+
+[tool.coverage.html]
+directory = "coverage_html_report"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "src.app.settings"

@@ -2,13 +2,17 @@
 Serializers for Contact APIs
 """
 
-from rest_framework import serializers
+from typing import Any
+from rest_framework.serializers import ModelSerializer
+from rest_framework.utils.serializer_helpers import ReturnDict
 
 from core.models import Contact
 
 
-class ContactSerializer(serializers.ModelSerializer):
+class ContactSerializer(ModelSerializer[Contact]):
     """Serializer for contacts."""
+
+    data: ReturnDict[str, Any]
 
     class Meta:
         model = Contact

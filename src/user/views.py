@@ -2,7 +2,7 @@
 Views for the user API.
 """
 
-from django.contrib.auth import get_user_model
+from typing import Any, override
 from rest_framework import (
     authentication,
     generics,
@@ -11,11 +11,14 @@ from rest_framework import (
     viewsets,
 )
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import APIView, ObtainAuthToken
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
+from rest_framework.views import APIView
 
+from core.models import User
 from user.permissions import IsNotGuestUser
 from user.serializers import AuthTokenSerializer, UserImageSerializer, UserSerializer
 
@@ -27,11 +30,11 @@ class CreateUserView(generics.CreateAPIView):
 
 
 class CreateGuestUserView(APIView):
-    """Create a new quest user in the system."""
+    """Create a new guest user in the system."""
 
-    def post(self, request, *args, **kwargs):
-        user = get_user_model().objects.create_guest_user()
-        token, created = Token.objects.get_or_create(user=user)
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user = User.objects.create_guest_user()
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({"token": token.key}, status=status.HTTP_201_CREATED)
 
 
@@ -49,36 +52,41 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsNotGuestUser]
 
+    @override
     def get_object(self):
         """Retrieve and return the authenticated user."""
         return self.request.user
 
+    @override
     def get_serializer_class(self):
         """Return the serializer class for request."""
         return self.serializer_class
 
-    def delete(self, request, *args, **kwargs):
+    # TODO: why delete in retrieve update api view?
+    def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Handle user deletion."""
         user = self.get_object()
-        user.delete()
+        _ = user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserUploadImageView(viewsets.ModelViewSet):
+class UserUploadImageView(viewsets.ModelViewSet[User]):
     serializer_class = UserImageSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsNotGuestUser]
 
-    def get_object(self):
+    @override
+    def get_object(self) -> User:
         """Retrieve and return the authenticated user."""
         return self.request.user
 
-    def get_serializer_class(self):
+    @override
+    def get_serializer_class(self) -> type[UserImageSerializer]:
         """Return the serializer class for request."""
         return self.serializer_class
 
     @action(methods=["POST"], detail=True, url_path="upload-image")
-    def upload_image(self, request, pk=None):
+    def upload_image(self, request: Request, pk=None):
         """Upload an image to user."""
         # print("Absolute URI: %s", request.build_absolute_uri())
         # print("Host: %s", request.get_host())
@@ -86,7 +94,7 @@ class UserUploadImageView(viewsets.ModelViewSet):
         serializer = self.get_serializer(user, data=request.data)
 
         if serializer.is_valid():
-            serializer.save()
+            _ = serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

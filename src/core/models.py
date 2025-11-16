@@ -2,138 +2,58 @@
 Database models.
 """
 
+from datetime import date, timedelta
 import os
 import uuid
-
+from typing import Any, override
 from colorfield.fields import ColorField
-from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
-from django.db import models, transaction
+from django.db import models
+from django.utils import timezone
+from phonenumber_field.modelfields import PhoneNumberField
+from ordered_model.models import OrderedModel
 
-from core.utils import generate_name
+from core.utils import PRIORITY_CHOICES, generate_name
+from core.validators import (
+    DEFAULT_TEXT_FIELD_MAX_LENGTH,
+    DEFAULT_TEXT_FIELD_MIN_LENGTH,
+    EMAIL_REGEX,
+    choice_validator,
+    email_validator,
+    generate_choice_regex,
+    generate_length_regex,
+    char_length_validator,
+    text_length_validator,
+    spacing_validator,
+    SPACING_REGEX,
+)
+
+# from PIL import Image, ImageDraw, ImageFont
+# from io import BytesIO
+# from django.core.files.base import ContentFile
 
 
-def user_image_file_path(instance, filename):
+def default_due_date() -> date:
+    return (timezone.now() + timedelta(days=7)).date()
+
+
+# def get_default_category(user: "User") -> "Category":
+#     """Get the default category for a user."""
+#     return Category.objects.get_or_create(user=user, name="Any")[0]
+
+
+# TODO: limit the image to size and extension
+# Also when user gets deleted, delete the image
+# Also when user image is updated / cleared, delete the old image
+def user_image_file_path(_: "User | None", filename: str) -> str:
     """Generate file path for new user image."""
     ext = os.path.splitext(filename)[1]
     filename = f"{uuid.uuid4()}{ext}"
-
     return os.path.join("uploads", "user", filename)
-
-
-class PositionedModel(models.Model):
-    """Abstract model to handle position-related functionality."""
-
-    position = models.IntegerField(null=True)
-    parent_attribute = None  # This will be set in the subclasses
-    # Swap positions
-    temporary_position = None  # or another value that you're sure won't conflict
-
-    class Meta:
-        abstract = True
-        constraints = [
-            models.UniqueConstraint(fields=["position"], name="unique_position")
-        ]
-
-    @classmethod
-    def get_max_position(cls, parent_value=None):
-        """
-        Get the maximum position for a given parent attribute.
-        :param parent_value: The value of the parent attribute to filter by, can be None.
-        :return: The maximum position or None if no records are found.
-        """
-        if not cls.parent_attribute:
-            raise ValueError(f"parent_attribute is not set in {cls.__name__}")
-        filter_kwargs = {}
-        filter_kwargs = {cls.parent_attribute: parent_value}
-        aggregate_result = cls.objects.filter(**filter_kwargs).aggregate(
-            models.Max("position")
-        )
-        return aggregate_result["position__max"]
-
-    @classmethod
-    def get_min_position(cls, parent_value=None):
-        """
-        Get the minimum position for a given parent attribute.
-        :param parent_value: The value of the parent attribute to filter by, can be None.
-        :return: The minimum position or None if no records are found.
-        """
-        if not cls.parent_attribute:
-            raise ValueError(f"parent_attribute is not set in {cls.__name__}")
-        filter_kwargs = {}
-
-        filter_kwargs = {cls.parent_attribute: parent_value}
-        aggregate_result = cls.objects.filter(**filter_kwargs).aggregate(
-            models.Min("position")
-        )
-        return aggregate_result["position__min"]
-
-    @classmethod
-    def swap_positions(cls, instance1, instance2):
-        if not cls.parent_attribute:
-            raise ValueError(f"parent_attribute is not set in {cls.__name__}")
-
-        if instance1.__class__ != instance2.__class__:
-            raise ValueError("Instances are not of the same class")
-
-        # Check if both instances belong to the same parent entity
-        parent1 = getattr(instance1, cls.parent_attribute)
-        parent2 = getattr(instance2, cls.parent_attribute)
-
-        if parent1 != parent2:
-            raise ValueError("Instances do not have same parent!")
-
-        instance1_position = instance1.position
-        instance2_position = instance2.position
-
-        with transaction.atomic():
-            instance1.position = cls.temporary_position
-            instance1.save()
-
-            # Determine direction and range for shifting positions
-            if instance1_position < instance2_position:
-                # Shift positions of instances between instance1 and instance2 down by one
-                instances_between = cls.objects.filter(
-                    **{cls.parent_attribute: parent1},
-                    position__gt=instance1_position,
-                    position__lt=instance2_position,
-                ).order_by(
-                    "position"
-                )  # Sorting in ascending order
-                instances_between.update(position=models.F("position") - 1)
-                instance2.position = instance2_position - 1
-            elif instance1_position > instance2_position:
-                # Shift positions of instances between instance2 and instance1 up by one
-                instances_between = cls.objects.filter(
-                    **{cls.parent_attribute: parent1},
-                    position__lt=instance1_position,
-                    position__gt=instance2_position,
-                ).order_by(
-                    "-position"
-                )  # Sorting in descending order
-                instances_between.update(position=models.F("position") + 1)
-                instance2.position = instance2_position + 1
-
-            instance2.save()
-            # Move instance1 to instance2's position
-            instance1.position = instance2_position
-            instance1.save()
-
-    @classmethod
-    def swap_parent(cls, instance, new_parent, new_position):
-        # current_parent = getattr(instance, cls.parent_attribute)
-        with transaction.atomic():
-            instance.position = cls.temporary_position
-            setattr(instance, cls.parent_attribute, new_parent)
-            instance.position = new_position
-            instance.save()
-
-    def __str__(self):
-        return str(self.position)
 
 
 class TimeStampedModel(models.Model):
@@ -149,20 +69,22 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
-class UserManager(BaseUserManager):
+class UserManager(BaseUserManager["User"]):
     """Manager for users."""
 
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(
+        self, email: str, password: str | None = None, **extra_fields: Any
+    ) -> "User":
         """Create, save and return a new user."""
         if not email:
             raise ValueError("User must have an email address.")
-        user = self.model(email=self.normalize_email(email), **extra_fields)
+        user = User(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
 
         return user
 
-    def create_superuser(self, email, password):
+    def create_superuser(self, email: str, password: str) -> "User":
         """Create and return a new superuser"""
         user = self.create_user(email, password)
         user.is_staff = True
@@ -171,21 +93,20 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_guest_user(self, **extra_fields):
+    def create_guest_user(self, **extra_fields: Any) -> "User":
         """Create and return a new guest user with a random username."""
         random_identifier = generate_name()
         dummy_email = f"{self.normalize_email_identifier(random_identifier)}@guest.com"
-        user = self.model(email=dummy_email, **extra_fields)
+        user = User(email=dummy_email, **extra_fields)
         user.name = f"{random_identifier}"
         user.set_unusable_password()
         user.is_guest = True
         user.save(using=self._db)
         return user
 
-    def normalize_email_identifier(self, identifier):
-        # Convert to lowercase to normalize
+    def normalize_email_identifier(self, identifier: str) -> str:
+        """Lowercases a string and replaces spaces with underscore"""
         normalized = identifier.lower()
-        # Replace any disallowed characters (if there were any, depends on generation logic)
         normalized = normalized.replace(" ", "_")
         return normalized
 
@@ -193,148 +114,343 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     """User in the system."""
 
-    email = models.EmailField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
+    USERNAME_FIELD = "email"
+
+    email = models.EmailField(
+        unique=True,
+        validators=[
+            email_validator(
+                code="%(app_label)s_%(class)s_email_invalid",
+            ),
+            char_length_validator(
+                code="%(app_label)s_%(class)s_email_length_invalid",
+            ),
+        ],
+    )
+    name = models.CharField(
+        default="Unnamed",
+        validators=[
+            char_length_validator(
+                code="%(app_label)s_%(class)s_name_length_invalid",
+            ),
+            spacing_validator(
+                code="%(app_label)s_%(class)s_name_spacing_invalid",
+            ),
+        ],
+    )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    image = models.ImageField(null=True, upload_to=user_image_file_path)
+    image = models.ImageField(null=True, blank=True, upload_to=user_image_file_path)
     is_guest = models.BooleanField(default=False)
     objects = UserManager()
 
-    USERNAME_FIELD = "email"
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_name_check",
+                condition=(
+                    models.Q(name__regex=generate_length_regex())
+                    & ~models.Q(name__regex=SPACING_REGEX)
+                ),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_email_check",
+                condition=(
+                    models.Q(email__regex=EMAIL_REGEX)
+                    & models.Q(email__regex=generate_length_regex())
+                ),
+            ),
+        ]
 
 
 class Board(TimeStampedModel):
     """Board Object."""
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
     )
-    title = models.CharField(max_length=255, default="Untitled")
-
-    def __str__(self):
-        return self.title
-
-
-class List(TimeStampedModel, PositionedModel):
-    """List Object."""
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+    title = models.CharField(
+        default="Untitled",
+        validators=[
+            spacing_validator(code="%(app_label)s_%(class)s_title_spacing_invalid"),
+            char_length_validator(code="%(app_label)s_%(class)s_title_length_invalid"),
+        ],
     )
-    name = models.CharField(max_length=255, default="Untitled")
-    board = models.ForeignKey(
-        Board, on_delete=models.SET_NULL, null=True, blank=True, related_name="lists"
-    )
-    parent_attribute = "board"  # Set the parent attribute for List
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["board", "position"], name="unique_position_per_board"
-            )
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_title_check",
+                condition=(
+                    models.Q(title__regex=generate_length_regex())
+                    & ~models.Q(title__regex=SPACING_REGEX)
+                ),
+            ),
         ]
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.title}"
+
+
+class ListOfTasks(TimeStampedModel, OrderedModel):
+    """ListOfTasks Object."""
+
+    @property
+    def user(self):
+        return self.board.user
+
+    @user.setter
+    def user(self, value: User):
+        self.board.user = value
+        self.board.save()
+
+    name = models.CharField(
+        default="Unnamed",
+        validators=[
+            char_length_validator(code="%(app_label)s_%(class)s_name_length_invalid"),
+            spacing_validator(code="%(app_label)s_%(class)s_name_spacing_invalid"),
+        ],
+    )
+    board = models.ForeignKey(
+        Board,
+        on_delete=models.PROTECT,
+        related_name="lists_of_tasks",
+    )
+    order_with_respect_to = "board"
+
+    class Meta(OrderedModel.Meta):
+        verbose_name_plural = "ListsOfTasks"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["board", "order"], name="unique_order_per_board"
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_name_check",
+                condition=(
+                    models.Q(name__regex=generate_length_regex())
+                    & ~models.Q(name__regex=SPACING_REGEX)
+                ),
+            ),
+        ]
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+
+class Category(TimeStampedModel):
+    """Category Object"""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(
+        default="Issue",
+        validators=[
+            spacing_validator(code="%(app_label)s_%(class)s_name_spacing_invalid"),
+            char_length_validator(code="%(app_label)s_%(class)s_name_length_invalid"),
+        ],
+    )
+    color: ColorField = ColorField(default="#FFF0000")  # TODO: add color validator
+
+    class Meta:
+        verbose_name_plural = "Categories"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "name"], name="unique_name_per_user"
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_name_check",
+                condition=(
+                    models.Q(name__regex=generate_length_regex())
+                    & ~models.Q(name__regex=SPACING_REGEX)
+                ),
+            ),
+        ]
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.name}"
 
 
 class Contact(TimeStampedModel):
     """Contact object"""
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
     )
-    email = models.EmailField(max_length=255, null=True, blank=True)
-    name = models.CharField(max_length=255, default="Anonymous", null=True, blank=True)
-    phone_number = models.CharField(max_length=255, null=True, blank=True)
+    email = models.EmailField(
+        default="",
+        blank=True,
+        validators=[
+            email_validator(code="%(app_label)s_%(class)s_email_invalid"),
+        ],
+    )
+    name = models.CharField(
+        default="Anonymous",
+        blank=True,
+        validators=[
+            spacing_validator(code="%(app_label)s_%(class)s_name_spacing_invalid"),
+            char_length_validator(code="%(app_label)s_%(class)s_name_length_invalid"),
+        ],
+    )
+    phone_number = PhoneNumberField(blank=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "email"],
-                name="unique_user_email",
-                condition=models.Q(email__isnull=False)
-                & ~models.Q(
-                    email__exact=""
-                ),  # Ensure the constraint only applies when email is not NULL
+                name="%(app_label)s_%(class)s_user_email_unique",
+                condition=~models.Q(email__exact=""),
             ),
             models.UniqueConstraint(
                 fields=["user", "phone_number"],
-                name="unique_user_phone",
-                condition=models.Q(phone_number__isnull=False)
-                & ~models.Q(phone_number__exact=""),
+                name="%(app_label)s_%(class)s_user_phone_unique",
+                condition=~models.Q(phone_number__exact=""),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_email_check",
+                condition=models.Q(email="") | models.Q(email__regex=EMAIL_REGEX),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_name_check",
+                condition=models.Q(name="")
+                | (
+                    models.Q(name__regex=generate_length_regex())
+                    & ~models.Q(name__regex=SPACING_REGEX)
+                ),
+            ),
+            # TODO add phone number check
+        ]
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.name or self.email or self.phone_number} - {self.pk}"
+
+
+class Task(TimeStampedModel, OrderedModel):
+    """Task object."""
+
+    @property
+    def user(self):
+        return self.list_of_tasks.user
+
+    @user.setter
+    def user(self, value: User):
+        self.list_of_tasks.user = value
+        self.list_of_tasks.save()
+
+    title = models.CharField(
+        default="Untitled",
+        validators=[
+            spacing_validator(code="%(app_label)s_%(class)s_title_spacing_invalid"),
+            char_length_validator(code="%(app_label)s_%(class)s_title_length_invalid"),
+        ],
+    )
+    description = models.TextField(
+        blank=True,
+        validators=[
+            text_length_validator(
+                code="%(app_label)s_%(class)s_description_length_invalid"
+            )
+        ],
+    )
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+    assignees = models.ManyToManyField(Contact, blank=True, related_name="tasks")
+    due_date = models.DateField(default=default_due_date)
+    priority = models.CharField(
+        choices=PRIORITY_CHOICES,
+        default="Low",
+        validators=[
+            choice_validator(
+                choices=PRIORITY_CHOICES,
+                code="%(app_label)s_%(class)s_priority_choice_invalid",
+            )
+        ],
+    )
+    list_of_tasks = models.ForeignKey(
+        ListOfTasks,
+        on_delete=models.PROTECT,
+        related_name="tasks",
+    )
+
+    order_with_respect_to = "list_of_tasks"
+
+    class Meta(OrderedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=["list_of_tasks", "order"], name="unique_order_per_list"
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_title_check",
+                condition=(
+                    models.Q(title__regex=generate_length_regex())
+                    & ~models.Q(title__regex=SPACING_REGEX)
+                ),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_priority_check",
+                condition=models.Q(
+                    priority__regex=generate_choice_regex(PRIORITY_CHOICES)
+                ),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_description_check",
+                condition=models.Q(description="")
+                | models.Q(
+                    description__regex=generate_length_regex(
+                        min_length=DEFAULT_TEXT_FIELD_MIN_LENGTH,
+                        max_length=DEFAULT_TEXT_FIELD_MAX_LENGTH,
+                    )
+                ),
             ),
         ]
 
-    def __str__(self):
-        return self.name or self.email or self.phone_number
-
-
-class Category(TimeStampedModel):
-    """Category Object"""
-
-    class Meta:
-        verbose_name_plural = "Categories"
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    name = models.CharField(max_length=255)
-    color = ColorField(default="#FFF0000")
-
-    def __str__(self):
-        return self.name
-
-
-class Task(TimeStampedModel, PositionedModel):
-    """Task object."""
-
-    PRIORITY_CHOICES = [("Urgent", "Urgent"), ("Medium", "Medium"), ("Low", "Low")]
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False
-    )
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True, blank=True
-    )
-    assignees = models.ManyToManyField(Contact, blank=True, related_name="assignees")
-    due_date = models.DateField(null=True, blank=True)
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default="Low")
-    list = models.ForeignKey(
-        List, on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks"
-    )
-    order = models.PositiveIntegerField(default=0, blank=False, null=False)
-
-    parent_attribute = "list"  # Set the parent attribute for List
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["list", "position"], name="unique_position_per_list"
-            )
-        ]
-
-    def __str__(self):
-        return self.title
+    @override
+    def __str__(self) -> str:
+        return f"{self.title}"
 
 
 class Subtask(TimeStampedModel):
     """Subtask object."""
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
+    @property
+    def user(self):
+        return self.task.user
+
+    @user.setter
+    def user(self, value: User):
+        self.task.user = value
+        self.task.save()
+
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="subtasks")
-    title = models.CharField(max_length=255)
+    title = models.CharField(
+        default="Untitled",
+        validators=[
+            spacing_validator(code="%(app_label)s_%(class)s_title_spacing_invalid"),
+            char_length_validator(code="%(app_label)s_%(class)s_title_length_invalid"),
+        ],
+    )
     done = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.title
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_title_check",
+                condition=(
+                    models.Q(title__regex=generate_length_regex())
+                    & ~models.Q(title__regex=SPACING_REGEX)
+                ),
+            ),
+        ]
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.title}"
+
+
+ScrumAPIModel = Board | Category | Contact | ListOfTasks | Subtask | Task

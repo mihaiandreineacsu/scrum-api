@@ -2,64 +2,49 @@
 Views for the task APIs.
 """
 
-from django.db.models import Max
-from rest_framework import filters
+from typing import override
+from django.db.models.query import QuerySet
+from django.db.models import Prefetch
+from rest_framework.filters import SearchFilter
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
-from core.models import Task
-from position.position_exception import PositionException
-from position.views import PositionViewSet
-from task import serializers
+from core.models import Subtask, Task
+from task.serializers import TaskSerializer
 
 
-class TaskViewSet(PositionViewSet):
+class TaskViewSet(ModelViewSet[Task]):
     """View for manage task APIs."""
 
-    serializer_class = serializers.TaskSerializer
+    serializer_class = TaskSerializer
     queryset = Task.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [SearchFilter]
 
-    def get_queryset(self):
+    @override
+    def get_queryset(self) -> QuerySet[Task, Task]:
         """Retrieve tasks for authenticated user."""
-        queryset = self.queryset.filter(user=self.request.user).order_by("-position")
-        # Get the query parameter
-        list_is_null = self.request.query_params.get("list_is_null", None)
-
-        if list_is_null is not None:
-            queryset = queryset.filter(
-                list__isnull=list_is_null.lower() in ["true", "1", "yes"]
+        queryset = (
+            self.queryset.filter(list_of_tasks__board__user=self.request.user)
+            .order_by("-order")
+            .prefetch_related(
+                Prefetch("subtasks", queryset=Subtask.objects.order_by("-id"))
             )
+        )
 
         return queryset
 
-    def get_serializer_class(self):
+    @override
+    def get_serializer_class(self) -> type[TaskSerializer]:
         """Return the serializer class for request."""
         if self.action == "list":
-            return serializers.TaskSerializer
+            return TaskSerializer
 
         return self.serializer_class
 
-    def create(self, request, **args):
-        new_list = request.data.get("list")
-        max_position = Task.objects.filter(list=new_list).aggregate(Max("position"))[
-            "position__max"
-        ]
-        request.data.update({"position": (max_position or 0) + 1})
-        return super().create(request, *args)
-
-    def update(self, request, *args, **kwargs):
-        try:
-            return super().update(request, *args, **kwargs)
-        except PositionException as e:
-            return Response(
-                data={"message": str(e), "status": e.status_code, "error": str(e.error)}
-            )
-
-    def perform_create(self, serializer):
+    @override
+    def perform_create(self, serializer: TaskSerializer):
         """Create a new task."""
-        # task = serializer.save(user=self.request.user)
-        serializer.save(user=self.request.user)
+        _ = serializer.save(user=self.request.user)

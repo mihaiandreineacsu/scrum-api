@@ -2,22 +2,19 @@
 Serializers for the user API View.
 """
 
-from django.contrib.auth import (
-    authenticate,
-    get_user_model,
-)
-from rest_framework import (
-    serializers,
-)
+from typing import Any, override
+
+from django.contrib.auth import authenticate
+from rest_framework import serializers
 
 from core.models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer[User]):
     """Serializer for the user object."""
 
     class Meta:
-        model = get_user_model()
+        model = User
         fields = [
             "email",
             "password",
@@ -31,14 +28,16 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at", "is_guest"]
         extra_kwargs = {"password": {"write_only": True, "min_length": 5}}
 
-    def create(self, validated_data):
+    @override
+    def create(self, validated_data: Any) -> User:
         """Create and return a user with encrypted password."""
-        return get_user_model().objects.create_user(**validated_data)
+        return User.objects.create_user(**validated_data)
 
-    def update(self, instance, validated_data):
+    @override
+    def update(self, instance: User, validated_data: Any) -> User:
         """Update and return user."""
         password = validated_data.pop("password", None)
-        user = super().update(instance, validated_data)
+        user: User = super().update(instance, validated_data)
 
         if password:
             user.set_password(password)
@@ -56,7 +55,8 @@ class AuthTokenSerializer(serializers.Serializer):
         trim_whitespace=False,
     )
 
-    def validate(self, attrs):
+    @override
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         """Validate and authenticate the user."""
         email = attrs.get("email")
         password = attrs.get("password")
@@ -74,7 +74,7 @@ class AuthTokenSerializer(serializers.Serializer):
         return attrs
 
 
-class UserImageSerializer(serializers.ModelSerializer):
+class UserImageSerializer(serializers.ModelSerializer[User]):
     """Serializer for uploading images to users."""
 
     class Meta:

@@ -38,7 +38,7 @@ urlpatterns = [
     path("api/summary/", include("summary.urls")),
     path("api/contact/", include("contact.urls")),
     path("api/category/", include("category.urls")),
-    path("api/list/", include("list.urls")),
+    path("api/list_of_tasks/", include("list_of_tasks.urls")),
 ]
 
 if settings.DEBUG:

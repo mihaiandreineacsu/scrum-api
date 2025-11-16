@@ -2,45 +2,55 @@
 Views for the board APIs.
 """
 
+from typing import override
+
 from django.db.models import Prefetch
-from rest_framework import viewsets
+from django.db.models.query import QuerySet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from board import serializers
-from core.models import Board, List, Task
+from board.serializers import BoardSerializer
+from core.models import Board, ListOfTasks, Task
 
 
-class BoardViewSet(viewsets.ModelViewSet):
+class BoardViewSet(ModelViewSet[Board]):
     """View for manage board APIs."""
 
-    serializer_class = serializers.BoardSerializer
-    queryset = Board.objects.all()
+    serializer_class: type[BoardSerializer] = BoardSerializer
+    queryset: QuerySet[Board, Board] = Board.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        """Retrieve boards for authenticated user with lists and tasks ordered by position."""
+    @override
+    def get_queryset(self) -> QuerySet[Board, Board]:
+        """
+        Retrieve boards for authenticated user
+        with lists_of_tasks and tasks ordered by order.
+        """
+        # TODO: Is this covered by tests?
         return (
             self.queryset.filter(user=self.request.user)
             .prefetch_related(
                 Prefetch(
-                    "lists",
-                    queryset=List.objects.prefetch_related(
-                        Prefetch("tasks", queryset=Task.objects.order_by("-position"))
-                    ).order_by("-position"),
+                    "lists_of_tasks",
+                    queryset=ListOfTasks.objects.prefetch_related(
+                        Prefetch("tasks", queryset=Task.objects.order_by("-order"))
+                    ).order_by("-order"),
                 )
             )
             .order_by("-id")
         )
 
-    def get_serializer_class(self):
+    @override
+    def get_serializer_class(self) -> type[BoardSerializer]:
         """Return the serializer class for request."""
         if self.action == "list":
-            return serializers.BoardSerializer
+            return BoardSerializer
 
         return self.serializer_class
 
-    def perform_create(self, serializer):
+    @override
+    def perform_create(self, serializer: BoardSerializer):
         """Create a new board."""
-        serializer.save(user=self.request.user)
+        _ = serializer.save(user=self.request.user)

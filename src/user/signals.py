@@ -1,14 +1,21 @@
+from typing import Any
 from django.core.mail import EmailMultiAlternatives
-from django.dispatch import receiver
+from django.dispatch import Signal, receiver
 from django.template.loader import render_to_string
 from django_rest_passwordreset.signals import reset_password_token_created
+from django_rest_passwordreset.views import ResetPasswordRequestToken
+from django_rest_passwordreset.models import ResetPasswordToken
 
 from app.settings import DEFAULT_FROM_EMAIL
 
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(
-    sender, instance, reset_password_token, *args, **kwargs
+    sender: Signal,
+    instance: ResetPasswordRequestToken,
+    reset_password_token: ResetPasswordToken,
+    *args: Any,
+    **kwargs: Any,
 ):
     """
     Handles password reset tokens
@@ -21,7 +28,7 @@ def password_reset_token_created(
     :return:
     """
     # send an e-mail to the user
-    context = {
+    context: dict[str, Any] = {
         "current_user": reset_password_token.user,
         "username": reset_password_token.user.name,
         "email": reset_password_token.user.email,
@@ -50,4 +57,4 @@ def password_reset_token_created(
         [reset_password_token.user.email],
     )
     msg.attach_alternative(email_html_message, "text/html")
-    msg.send(fail_silently=True)
+    _ = msg.send(fail_silently=True)

@@ -2,172 +2,96 @@
 Tests for category APIs.
 """
 
-from django.contrib.auth import get_user_model
-from django.test import TestCase
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APIClient
+from typing import override
+
+from django.db.models.functions import Lower
+from django.db.models.query import QuerySet
 
 from category.serializers import CategorySerializer
 from core.models import Category
-
-CATEGORIES_URL = reverse("category:category-list")
-
-
-def create_category(user, **params):
-    """Create and return a sample category."""
-    name = params.get("name", "Some Category Name")
-    color = params.get("color", "#FFFFFF")
-    defaults = {
-        "name": name,
-        "color": color,
-    }
-    defaults.update(params)
-
-    category = Category.objects.create(user=user, **defaults)
-    return category
+from core.tests.api_test_case import PrivateAPITestCase, PublicAPITestCase
+from core.tests.utils import create_test_category
 
 
-def detail_url(category_id):
-    """Create and return a category detail URL."""
-    return reverse("category:category-detail", args=[category_id])
-
-
-def create_user(**params):
-    """Create and return a new user."""
-    return get_user_model().objects.create_user(**params)
-
-
-class PublicCategoryAPITests(TestCase):
+class PublicCategoryAPITests(PublicAPITestCase):
     """Test unauthenticated API requests."""
 
-    def setUp(self):
-        self.client = APIClient()
+    VIEW_NAME = "category"
 
     def test_auth_required(self):
-        """Test auth is required to call API."""
-        res = self.client.get(CATEGORIES_URL)
-
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assert_auth_required()
 
 
-class PrivateCategoryAPITests(TestCase):
+class PrivateCategoryAPITests(PrivateAPITestCase):
     """Test authenticated API requests."""
 
+    user_category = Category()
+    other_user_category = Category()
+    api_model = Category
+    api_serializer = CategorySerializer
+    ordering = Lower("name")
+    VIEW_NAME = "category"
+
+    queryset: QuerySet[Category, Category] = Category.objects.all()
+
+    @override
     def setUp(self):
-        self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            "user@example.com",
-            "testpass123",
-        )
-        self.client.force_authenticate(self.user)
-
-    def test_retrieve_categories(self):
-        """Test retrieving a list of categories."""
-        create_category(user=self.user)
-        create_category(user=self.user, name="Sales", color="#AAABBB")
-
-        res = self.client.get(CATEGORIES_URL)
-
-        categories = Category.objects.all().order_by("name")
-        serializer = CategorySerializer(categories, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
-
-    def test_category_list_limited_to_user(self):
-        """Test list of categories is limited to authenticated user."""
-        other_user = get_user_model().objects.create_user(
-            "other@example.com",
-            "testpass123",
-        )
-        create_category(user=other_user)
-        create_category(user=self.user, name="Category 2")
-
-        res = self.client.get(CATEGORIES_URL)
-
-        categories = Category.objects.filter(user=self.user)
-        serializer = CategorySerializer(categories, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        super().setUp()
+        self.user_category = create_test_category(user=self.user)
+        self.other_user_category = create_test_category(user=self.other_user)
 
     def test_create_category(self):
         """Test creating a category."""
-        payload = {
-            "name": "Some Category",
-            "color": "#000000",
-        }
-        res = self.client.post(CATEGORIES_URL, payload)
+        payload = {"name": "issue", "color": "#000000", "user": self.other_user.pk}
+        self.assert_create_model(payload)
 
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        category = Category.objects.get(id=res.data["id"])
-        for k, v in payload.items():
-            self.assertEqual(getattr(category, k), v)
-        self.assertEqual(category.user, self.user)
+    def test_retrieve_categories(self):
+        """Test retrieving a list of categories."""
+        self.assert_retrieve_models()
+
+    def test_retrieve_category(self):
+        """Test retrieving category."""
+        self.assert_deleting_model(self.user_category)
 
     def test_partial_update(self):
-        """Test partial update if a category."""
-        category = create_category(
-            user=self.user,
-            color="#AAAAAA",
-        )
-
-        payload = {"color": "#BBBBBB"}
-        url = detail_url(category.id)
-        res = self.client.patch(url, payload)
-
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        category.refresh_from_db()
-        self.assertEqual(category.color, payload["color"])
-        self.assertEqual(category.user, self.user)
+        """Test partial update of a category."""
+        updates = [
+            {"color": "#BBBBBB", "user": self.user.pk},
+            {"name": "feature", "user": self.user.pk},
+        ]
+        for update in updates:
+            self.assert_update_model(update, self.user_category, partial_update=True)
 
     def test_full_update(self):
         """Test full update of category."""
-        category = create_category(
-            user=self.user,
-        )
-
-        payload = {
-            "name": "Category 2",
-            "color": "#CCCCCC",
-        }
-        url = detail_url(category.id)
-        res = self.client.put(url, payload)
-
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        category.refresh_from_db()
-        for k, v in payload.items():
-            self.assertEqual(getattr(category, k), v)
-        self.assertEqual(category.user, self.user)
-
-    def test_update_user_returns_error(self):
-        """test changing the category user results in an error."""
-        new_user = create_user(email="user2@example.com", password="test123")
-        category = create_category(user=self.user)
-
-        payload = {"user": new_user.id}
-        url = detail_url(category.id)
-        self.client.patch(url, payload)
-
-        category.refresh_from_db()
-        self.assertEqual(category.user, self.user)
+        payload = {"name": "feature", "color": "#CCCCCC", "user": self.other_user.pk}
+        self.assert_update_model(payload, self.user_category)
 
     def test_deleting_category(self):
         """Test deleting a category successful."""
-        category = create_category(user=self.user)
+        self.assert_deleting_model(self.user_category)
 
-        url = detail_url(category.id)
-        res = self.client.delete(url)
-
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Category.objects.filter(id=category.id).exists())
-
-    def test_category_other_users_category_error(self):
+    def test_deleting_other_user_category_error(self):
         """Test trying to delete another users category gives error."""
-        new_user = create_user(email="user2@example.com", password="test123")
-        category = create_category(user=new_user)
+        self.assert_deleting_other_user_model_error(self.other_user_category)
 
-        url = detail_url(category.id)
-        res = self.client.delete(url)
+    def test_full_updating_other_user_category_error(self):
+        """Test trying to put another users category gives error."""
+        payload = {"name": "feature", "color": "#CCCCCC", "user": self.user.pk}
+        self.assert_updating_other_user_model_error(payload, self.other_user_category)
 
-        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertTrue(Category.objects.filter(id=category.id).exists())
+    def test_partial_update_other_user_category_error(self):
+        """Test trying to patch another users category gives error."""
+
+        updates = [
+            {"color": "#BBBBBB", "user": self.user.pk},
+            {"name": "feature", "user": self.user.pk},
+        ]
+        for update in updates:
+            self.assert_updating_other_user_model_error(
+                update, self.other_user_category, partial_update=True
+            )
+
+    def test_retrieve_other_user_category_error(self):
+        """Test trying to retrieve another users category gives error."""
+        self.assert_retrieve_other_user_model_error(self.other_user_category.pk)

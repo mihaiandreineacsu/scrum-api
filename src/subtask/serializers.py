@@ -2,43 +2,49 @@
 Serializers for Subtask APIs
 """
 
-from rest_framework import serializers
+from typing import Any, override
+
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
+from rest_framework.utils.serializer_helpers import ReturnDict
 
 from core.models import Subtask, Task
 
 
-class SubtaskSerializer(serializers.ModelSerializer):
+class SubtaskSerializer(ModelSerializer[Subtask]):
     """Serializer for subtasks which adjusts based on context."""
 
-    id = serializers.IntegerField(required=False)
+    task = PrimaryKeyRelatedField(queryset=Task.objects.all())
+    data: ReturnDict[str, Any]
 
     class Meta:
         model = Subtask
         fields = ["id", "title", "done", "task", "created_at", "updated_at"]
-        read_only_fields = ["created_at", "updated_at"]
-        extra_kwargs = {"task": {"required": False, "queryset": Task.objects.none()}}
+        read_only_fields = ["id", "created_at", "updated_at"]
+        # extra_kwargs = {"task": {"required": False, "queryset": Task.objects.none()}}
 
-    def __init__(self, *args, **kwargs):
-        super(SubtaskSerializer, self).__init__(*args, **kwargs)
-        request = self.context.get("request", None)
-        nested = self.context.get("nested", False)
+    # def __init__(self, *args: Any, **kwargs: Any):
+    #     super().__init__(*args, **kwargs)
+    #     if self.instance:
+    #         # If updating, make 'task' optional
+    #         self.fields["task"].required = False
+    #     else:
+    #         # If creating, ensure 'task' is required
+    #         self.fields["task"].required = True
 
-        if request and not nested:
-            # Filter the queryset for task field to include only user's tasks
-            self.fields["task"].queryset = Task.objects.filter(user=request.user)
-            self.fields["task"].required = True  # Task field required when not nested
+    @override
+    def create(self, validated_data: Any) -> Subtask:
+        return super().create(validated_data)
 
-        if nested:
-            # If nested, do not require the task field
-            self.fields["task"].required = False
+    @override
+    def update(self, instance: Subtask, validated_data: Any) -> Subtask:
+        return super().update(instance, validated_data)
 
+    @override
+    def to_representation(self, instance: Subtask) -> dict[str, Any]:
+        representation = super().to_representation(instance)
+        return representation
 
-class SubtaskCreateSerializer(serializers.ModelSerializer):
-    """Serializer for creating subtasks with a mandatory task foreign key."""
-
-    task = serializers.PrimaryKeyRelatedField(queryset=Task.objects.all())
-
-    class Meta:
-        model = Subtask
-        fields = ["id", "title", "done", "task", "created_at", "updated_at"]
-        read_only_fields = ["created_at", "updated_at"]
+    @override
+    def to_internal_value(self, data: dict[str, Any]) -> Task:
+        internal_value = super().to_internal_value(data)
+        return internal_value

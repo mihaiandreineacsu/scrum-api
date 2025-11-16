@@ -320,3 +320,23 @@ You should now be able to get to the breakpoint and start debugging the Django a
 ---
 
 TIP: If you're using Python 3.7 or later, debugpy also supports Python's ```breakpoint()``` function.
+
+## Testing
+
+- To run tests inside the container, use the following command:
+
+```cmd
+docker exec -it <container_name> pytest
+```
+
+Replace `<container_name>` with the name or ID of your running Django container. This command will execute `pytest` within the specified container, allowing you to run your test suite in the same environment as your application.
+
+Make sure that `pytest` is installed in your Docker image. You can add it to your `requirements.txt` or install it manually inside the container if needed.
+
+- To run coverage report inside the container, use the following command:
+
+```cmd
+docker exec -it <container_name> coverage run -m pytest
+docker exec -it <container_name> coverage report
+docker exec -it <container_name> coverage html
+```
