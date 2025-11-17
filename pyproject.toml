@@ -12,7 +12,7 @@ mypy_path = "stubs"
 [tool.basedpyright]
 pythonVersion = "3.13"
 include = ["src"]
-exclude = ["^venv/", "^env/"]
+exclude = ["^venv/", "^env/", "migrations", "__pycache__"]
 extraPaths = ["src"]
 useLibraryCodeForTypes = true
 

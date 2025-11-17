@@ -5,7 +5,6 @@ from django.db.models import Model
 from django.db.models.manager import BaseManager
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase as RestAPITestCase
@@ -15,6 +14,7 @@ from core.tests.utils import (
     TEST_OTHER_USER_EMAIL,
     TEST_OTHER_USER_PASSWORD,
     create_test_user,
+    validate_response_data,
 )
 
 
@@ -35,7 +35,7 @@ class PublicAPITestCase(ScrumAPITestCase):
         methods = {"list": ["get", "post"], "detail": ["get", "put", "patch", "delete"]}
 
         def check_auth_required(action: str, method: str, args: list[Any]) -> None:
-            res: Response = getattr(self.client, method)(self.api_url(action, args))
+            res = getattr(self.client, method)(self.api_url(action, args))
             self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         for action, method_list in methods.items():
@@ -70,30 +70,33 @@ class PrivateAPITestCase(ScrumAPITestCase):
 
     def assert_create_model(self, payload: dict[str, Any]) -> None:
         url = self.api_url("list", [])
-        res: Response = self.client.post(url, payload, format="json")
-        instance = self.api_model.objects.get(id=res.data["id"])
+        res = self.client.post(url, payload, format="json")
+        data = validate_response_data(res)
+        instance = self.api_model.objects.get(id=data["id"])
         serializer = self.api_serializer(instance, many=False)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(data, serializer.data)
         self.assertEqual(instance.user, self.user)
 
     def assert_retrieve_models(self):
         """Test retrieving Models."""
         url = self.api_url("list", [])
-        res: Response = self.client.get(url)
+        res = self.client.get(url)
+        data = validate_response_data(res)
         results = self.get_queryset()
         serializer = self.api_serializer(results, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(data, serializer.data)
 
     def assert_retrieve_model(self, model_pk: Any):
         """Test retrieving model."""
         url = self.api_url("detail", [model_pk])
-        res: Response = self.client.get(url)
-        result = self.api_model.objects.get(id=res.data["id"])
+        res = self.client.get(url)
+        data = validate_response_data(res)
+        result = self.api_model.objects.get(id=data["id"])
         serializer = self.api_serializer(result, many=False)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(data, serializer.data)
 
     def assert_update_model(
         self,

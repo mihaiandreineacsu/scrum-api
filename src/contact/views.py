@@ -3,7 +3,6 @@ Views for the contact APIs.
 """
 
 from typing import Any, override
-
 from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
 from rest_framework.authentication import TokenAuthentication
@@ -15,7 +14,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ModelViewSet
 
 from contact.serializers import ContactSerializer
-from core.models import Contact, User
+from core.models import Contact
 
 
 class ContactViewSet(ModelViewSet):
@@ -57,7 +56,7 @@ class ContactViewSet(ModelViewSet):
         """
         Validate that the contact's email and phone number are unique for the user.
         """
-        user: User = self.request.user
+        user = self.request.user
         email: str = request.data.get("email", "")
         name: str = request.data.get("name", "")
         phone_number: str = request.data.get("phone_number", "")

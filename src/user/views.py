@@ -4,6 +4,7 @@ Views for the user API.
 
 from typing import Any, override
 
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from rest_framework import (
     authentication,
     generics,
@@ -72,12 +73,14 @@ class UserUploadImageView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsNotGuestUser]
 
     @override
-    def get_object(self) -> User:
+    def get_object(self) -> AbstractBaseUser:
         """Retrieve and return the authenticated user."""
+        if isinstance(self.request.user, AnonymousUser):
+            raise ValueError("Should not happen")
         return self.request.user
 
     @action(methods=["POST"], detail=True, url_path="upload-image")
-    def upload_image(self, request: Request, pk=None):
+    def upload_image(self, request: Request):
         """Upload an image to user."""
         # print("Absolute URI: %s", request.build_absolute_uri())
         # print("Host: %s", request.get_host())

@@ -137,14 +137,14 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         constraints = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
-                check=(
+                condition=(
                     models.Q(name__regex=generate_length_regex())
                     & ~models.Q(name__regex=SPACING_REGEX)
                 ),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_email_check",
-                check=(
+                condition=(
                     models.Q(email__regex=EMAIL_REGEX)
                     & models.Q(email__regex=generate_length_regex())
                 ),
@@ -171,7 +171,7 @@ class Board(TimeStampedModel):
         constraints = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_title_check",
-                check=(
+                condition=(
                     models.Q(title__regex=generate_length_regex())
                     & ~models.Q(title__regex=SPACING_REGEX)
                 ),
@@ -217,7 +217,7 @@ class ListOfTasks(OrderedModel, TimeStampedModel):
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
-                check=(
+                condition=(
                     models.Q(name__regex=generate_length_regex())
                     & ~models.Q(name__regex=SPACING_REGEX)
                 ),
@@ -253,7 +253,7 @@ class Category(TimeStampedModel):
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
-                check=(
+                condition=(
                     models.Q(name__regex=generate_length_regex())
                     & ~models.Q(name__regex=SPACING_REGEX)
                 ),
@@ -303,11 +303,11 @@ class Contact(TimeStampedModel):
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_email_check",
-                check=models.Q(email="") | models.Q(email__regex=EMAIL_REGEX),
+                condition=models.Q(email="") | models.Q(email__regex=EMAIL_REGEX),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
-                check=models.Q(name="")
+                condition=models.Q(name="")
                 | (
                     models.Q(name__regex=generate_length_regex())
                     & ~models.Q(name__regex=SPACING_REGEX)
@@ -376,18 +376,20 @@ class Task(OrderedModel, TimeStampedModel):
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_title_check",
-                check=(
+                condition=(
                     models.Q(title__regex=generate_length_regex())
                     & ~models.Q(title__regex=SPACING_REGEX)
                 ),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_priority_check",
-                check=models.Q(priority__regex=generate_choice_regex(PRIORITY_CHOICES)),
+                condition=models.Q(
+                    priority__regex=generate_choice_regex(PRIORITY_CHOICES)
+                ),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_description_check",
-                check=models.Q(description="")
+                condition=models.Q(description="")
                 | models.Q(
                     description__regex=generate_length_regex(
                         min_length=DEFAULT_TEXT_FIELD_MIN_LENGTH,
@@ -428,7 +430,7 @@ class Subtask(TimeStampedModel):
         constraints = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_title_check",
-                check=(
+                condition=(
                     models.Q(title__regex=generate_length_regex())
                     & ~models.Q(title__regex=SPACING_REGEX)
                 ),

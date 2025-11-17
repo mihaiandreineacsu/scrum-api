@@ -13,7 +13,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from core.models import User
-from core.tests.utils import create_test_user
+from core.tests.utils import create_test_user, validate_response_data
 
 CREATE_USER_URL = reverse("user:create")
 TOKEN_URL = reverse("user:token")
@@ -41,10 +41,12 @@ class PublicUserApiTests(TestCase):
         }
         res = self.client.post(CREATE_USER_URL, payload)
 
+        data = validate_response_data(res)
+
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         user = User.objects.get(email=payload["email"])
         self.assertTrue(user.check_password(payload["password"]))
-        self.assertNotIn("password", res.data)
+        self.assertNotIn("password", data)
 
     def test_user_with_email_exists_error(self):
         """Test error returned if user with email exists."""
@@ -82,7 +84,9 @@ class PublicUserApiTests(TestCase):
 
         res = self.client.post(TOKEN_URL, payload)
 
-        self.assertIn("token", res.data)
+        data = validate_response_data(res)
+
+        self.assertIn("token", data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_token_bad_credentials(self):
@@ -92,7 +96,9 @@ class PublicUserApiTests(TestCase):
         payload = {"email": "johndoe@example", "password": "badpass"}
         res = self.client.post(TOKEN_URL, payload)
 
-        self.assertNotIn("token", res.data)
+        data = validate_response_data(res)
+
+        self.assertNotIn("token", data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_token_blank_password(self):
@@ -100,7 +106,9 @@ class PublicUserApiTests(TestCase):
         payload = {"email": "johndoe@example.com", "password": ""}
         res = self.client.post(TOKEN_URL, payload)
 
-        self.assertNotIn("token", res.data)
+        data = validate_response_data(res)
+
+        self.assertNotIn("token", data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_retrieve_user_unauthorized(self):
@@ -125,10 +133,12 @@ class PrivateUserApiTests(TestCase):
         """Test retrieving profile for logged in user."""
         res = self.client.get(ME_URL)
 
+        data = validate_response_data(res)
+
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data["name"], self.user.name)
-        self.assertEqual(res.data["email"], self.user.email)
-        self.assertEqual(res.data["image"], self.user.image)
+        self.assertEqual(data["name"], self.user.name)
+        self.assertEqual(data["email"], self.user.email)
+        self.assertEqual(data["image"], self.user.image)
 
     def test_post_me_not_allowed(self):
         """Test post is not allowed for the me endpoint."""
@@ -174,10 +184,11 @@ class ImageUploadTests(TestCase):
             _ = image_file.seek(0)
             payload = {"image": image_file}
             res = self.client.post(url, payload, format="multipart")
+            data = validate_response_data(res)
 
         self.user.refresh_from_db()
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertIn("image", res.data)
+        self.assertIn("image", data)
         self.assertTrue(os.path.exists(self.user.image.path))
 
     def test_upload_image_bad_request(self):
