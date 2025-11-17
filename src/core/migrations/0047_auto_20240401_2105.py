@@ -6,17 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0046_user_is_guest'),
+        ("core", "0046_user_is_guest"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='contact',
-            name='email',
+            model_name="contact",
+            name="email",
             field=models.EmailField(max_length=255),
         ),
         migrations.AddConstraint(
-            model_name='contact',
-            constraint=models.UniqueConstraint(fields=('user', 'email'), name='unique_user_email'),
+            model_name="contact",
+            constraint=models.UniqueConstraint(
+                fields=("user", "email"), name="unique_user_email"
+            ),
         ),
     ]

@@ -7,17 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0006_user_image'),
+        ("core", "0006_user_image"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='task',
-            name='link',
+            model_name="task",
+            name="link",
         ),
         migrations.AlterField(
-            model_name='task',
-            name='sub_tasks',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.TextField(blank=True), blank=True, size=None),
+            model_name="task",
+            name="sub_tasks",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.TextField(blank=True), blank=True, size=None
+            ),
         ),
     ]

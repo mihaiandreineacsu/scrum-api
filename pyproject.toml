@@ -121,7 +121,6 @@ exclude = '''
   | \.venv
   | venv
   | env
-  | migrations
   | __pycache__
   | build
   | dist
@@ -132,9 +131,9 @@ exclude = '''
 source = "src"
 max-line-length = 88
 load-plugins = ["pylint_django"]
-ignore = ["migrations", "venv", ".venv", "__pycache__"]
+ignore = ["venv", ".venv", "__pycache__"]
 django-settings-module = "app.settings"
-disable = ["W0511", "C0114", "C0115", "C0116"]
+disable = ["W0511", "C0114", "C0115", "C0116", "R0901"]
 
 [tool.django-stubs]
 django_settings_module = "src.app.settings"
@@ -173,7 +172,7 @@ ignore_errors = true
 directory = "coverage_html_report"
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "src.app.settings"
+DJANGO_SETTINGS_MODULE = "app.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-addopts = "--cov=src --cov-report=term-missing --cov-report=html:coverage_html_report"
+# addopts = "--cov=src --cov-report=term-missing --cov-report=html:coverage_html_report"
 python_paths = "src"

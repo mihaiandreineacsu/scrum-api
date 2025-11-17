@@ -6,26 +6,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0047_auto_20240401_2105'),
+        ("core", "0047_auto_20240401_2105"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='contact',
-            name='unique_user_email',
+            model_name="contact",
+            name="unique_user_email",
         ),
         migrations.AlterField(
-            model_name='contact',
-            name='email',
+            model_name="contact",
+            name="email",
             field=models.EmailField(blank=True, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='contact',
-            name='name',
+            model_name="contact",
+            name="name",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddConstraint(
-            model_name='contact',
-            constraint=models.UniqueConstraint(condition=models.Q(('email__isnull', False)), fields=('user', 'email'), name='unique_user_email'),
+            model_name="contact",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("email__isnull", False)),
+                fields=("user", "email"),
+                name="unique_user_email",
+            ),
         ),
     ]

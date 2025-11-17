@@ -6,12 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0050_alter_contact_name'),
+        ("core", "0050_alter_contact_name"),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='contact',
-            constraint=models.UniqueConstraint(condition=models.Q(('phone_number__isnull', False)), fields=('user', 'phone_number'), name='unique_user_phone'),
+            model_name="contact",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("phone_number__isnull", False)),
+                fields=("user", "phone_number"),
+                name="unique_user_phone",
+            ),
         ),
     ]

@@ -6,17 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0026_subtask_user'),
+        ("core", "0026_subtask_user"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='subtask',
-            name='task',
+            model_name="subtask",
+            name="task",
         ),
         migrations.AddField(
-            model_name='task',
-            name='subtasks',
-            field=models.ManyToManyField(blank=True, default=list, related_name='assignee', to='core.Subtask'),
+            model_name="task",
+            name="subtasks",
+            field=models.ManyToManyField(
+                blank=True, default=list, related_name="assignee", to="core.Subtask"
+            ),
         ),
     ]

@@ -7,13 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0008_alter_task_sub_tasks'),
+        ("core", "0008_alter_task_sub_tasks"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='task',
-            name='sub_tasks',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.TextField(blank=True, max_length=255), blank=True, default=list, size=None),
+            model_name="task",
+            name="sub_tasks",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.TextField(blank=True, max_length=255),
+                blank=True,
+                default=list,
+                size=None,
+            ),
         ),
     ]

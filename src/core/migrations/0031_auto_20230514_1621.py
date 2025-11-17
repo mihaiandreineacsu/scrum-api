@@ -7,26 +7,36 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0030_auto_20230514_0805'),
+        ("core", "0030_auto_20230514_0805"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='category',
-            options={'verbose_name_plural': 'Categories'},
+            name="category",
+            options={"verbose_name_plural": "Categories"},
         ),
         migrations.AlterModelOptions(
-            name='summary',
-            options={'verbose_name_plural': 'Summaries'},
+            name="summary",
+            options={"verbose_name_plural": "Summaries"},
         ),
         migrations.AlterField(
-            model_name='list',
-            name='board',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.board'),
+            model_name="list",
+            name="board",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="core.board",
+            ),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='category',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.category'),
+            model_name="task",
+            name="category",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="core.category",
+            ),
         ),
     ]

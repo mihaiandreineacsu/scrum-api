@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0003_rename_sub_task_task_sub_tasks'),
+        ("core", "0003_rename_sub_task_task_sub_tasks"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='task',
-            name='priority',
-            field=models.CharField(choices=[('Urgent', 'Urgent'), ('Medium', 'Medium'), ('Low', 'Low')], default='Low', max_length=6),
+            model_name="task",
+            name="priority",
+            field=models.CharField(
+                choices=[("Urgent", "Urgent"), ("Medium", "Medium"), ("Low", "Low")],
+                default="Low",
+                max_length=6,
+            ),
         ),
     ]

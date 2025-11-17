@@ -51,8 +51,6 @@ class SummaryView(APIView):
         tasks_in_backlog = Task.objects.filter(user=user, list__isnull=True).aggregate(
             count=Count("id"), latest_due_date=Max("due_date")
         )
-        # Upcoming deadline Task
-        # most_recent_deadline = Task.objects.filter(user=user).order_by('-due_date').first()
 
         # Construct response
         return Response(

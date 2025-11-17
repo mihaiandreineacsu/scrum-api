@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0013_remove_task_sub_tasks'),
+        ("core", "0013_remove_task_sub_tasks"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='board',
-            name='created_at',
+            model_name="board",
+            name="created_at",
             field=models.DateField(default=datetime.datetime.now),
         ),
     ]

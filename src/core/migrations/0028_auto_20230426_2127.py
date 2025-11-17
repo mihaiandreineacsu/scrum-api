@@ -8,23 +8,31 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0027_auto_20230426_0624'),
+        ("core", "0027_auto_20230426_0624"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='task',
-            name='assignees',
-            field=models.ManyToManyField(blank=True, default=list, related_name='assignees', to='core.Contact'),
+            model_name="task",
+            name="assignees",
+            field=models.ManyToManyField(
+                blank=True, default=list, related_name="assignees", to="core.Contact"
+            ),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='subtasks',
-            field=models.ManyToManyField(blank=True, default=list, related_name='subtasks', to='core.Subtask'),
+            model_name="task",
+            name="subtasks",
+            field=models.ManyToManyField(
+                blank=True, default=list, related_name="subtasks", to="core.Subtask"
+            ),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='user',
-            field=models.ForeignKey(editable=False, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="task",
+            name="user",
+            field=models.ForeignKey(
+                editable=False,
+                on_delete=django.db.models.deletion.CASCADE,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0036_alter_subtask_task'),
+        ("core", "0036_alter_subtask_task"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='order',
+            model_name="task",
+            name="order",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

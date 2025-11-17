@@ -1,7 +1,8 @@
 from datetime import date
 from typing import Any, override
 
-from django.db.models import BaseManager, Model
+from django.db.models import Model
+from django.db.models.manager import BaseManager
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.response import Response

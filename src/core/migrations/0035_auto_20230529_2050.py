@@ -7,18 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0034_alter_task_list'),
+        ("core", "0034_alter_task_list"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='task',
-            name='subtasks',
+            model_name="task",
+            name="subtasks",
         ),
         migrations.AddField(
-            model_name='subtask',
-            name='task',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='core.task'),
+            model_name="subtask",
+            name="task",
+            field=models.ForeignKey(
+                default=1, on_delete=django.db.models.deletion.CASCADE, to="core.task"
+            ),
             preserve_default=False,
         ),
     ]

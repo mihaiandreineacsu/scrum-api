@@ -7,13 +7,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0024_auto_20230423_1945'),
+        ("core", "0024_auto_20230423_1945"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='category',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.category'),
+            model_name="task",
+            name="category",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="core.category",
+            ),
         ),
     ]

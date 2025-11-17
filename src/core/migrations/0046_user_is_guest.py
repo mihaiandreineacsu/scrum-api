@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0045_alter_task_description'),
+        ("core", "0045_alter_task_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='is_guest',
+            model_name="user",
+            name="is_guest",
             field=models.BooleanField(default=False),
         ),
     ]

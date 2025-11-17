@@ -12,6 +12,7 @@
     "editor.formatOnSave": true,
     // "pylint.cwd": "${workspaceFolder}/src",
     "python-envs.pythonProjects": [],
+    "python.analysis.typeCheckingMode": "off",
     "python.envFile": "${workspaceFolder}/.env",
     "python.languageServer": "None",
     "python.terminal.activateEnvInCurrentTerminal": true,
@@ -19,6 +20,5 @@
         "src"
     ],
     "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
-    "python.analysis.typeCheckingMode": "off"
+    "python.testing.unittestEnabled": false
 }

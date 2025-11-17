@@ -7,13 +7,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0019_category'),
+        ("core", "0019_category"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='category',
-            name='color',
-            field=colorfield.fields.ColorField(default='#FF0000', image_field=None, max_length=18, samples=None),
+            model_name="category",
+            name="color",
+            field=colorfield.fields.ColorField(
+                default="#FF0000", image_field=None, max_length=18, samples=None
+            ),
         ),
     ]

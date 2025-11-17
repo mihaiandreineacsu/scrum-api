@@ -7,14 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0025_task_category'),
+        ("core", "0025_task_category"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subtask',
-            name='user',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='core.user'),
+            model_name="subtask",
+            name="user",
+            field=models.ForeignKey(
+                default=1, on_delete=django.db.models.deletion.CASCADE, to="core.user"
+            ),
             preserve_default=False,
         ),
     ]

@@ -7,13 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0033_alter_list_board'),
+        ("core", "0033_alter_list_board"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='task',
-            name='list',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tasks', to='core.list'),
+            model_name="task",
+            name="list",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="tasks",
+                to="core.list",
+            ),
         ),
     ]

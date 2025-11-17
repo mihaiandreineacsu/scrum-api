@@ -7,14 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0015_summary'),
+        ("core", "0015_summary"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='summary',
-            name='user',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='core.user'),
+            model_name="summary",
+            name="user",
+            field=models.ForeignKey(
+                default=1, on_delete=django.db.models.deletion.CASCADE, to="core.user"
+            ),
             preserve_default=False,
         ),
     ]

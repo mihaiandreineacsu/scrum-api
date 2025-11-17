@@ -7,39 +7,49 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0028_auto_20230426_2127'),
+        ("core", "0028_auto_20230426_2127"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="task",
+            name="created_at",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='task',
-            name='updated_at',
+            model_name="task",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='assignees',
-            field=models.ManyToManyField(blank=True, related_name='assignees', to='core.Contact'),
+            model_name="task",
+            name="assignees",
+            field=models.ManyToManyField(
+                blank=True, related_name="assignees", to="core.Contact"
+            ),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='due_date',
+            model_name="task",
+            name="due_date",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='priority',
-            field=models.CharField(choices=[('Urgent', 'Urgent'), ('Medium', 'Medium'), ('Low', 'Low')], default='Low', max_length=20),
+            model_name="task",
+            name="priority",
+            field=models.CharField(
+                choices=[("Urgent", "Urgent"), ("Medium", "Medium"), ("Low", "Low")],
+                default="Low",
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='subtasks',
-            field=models.ManyToManyField(blank=True, related_name='subtasks', to='core.Subtask'),
+            model_name="task",
+            name="subtasks",
+            field=models.ManyToManyField(
+                blank=True, related_name="subtasks", to="core.Subtask"
+            ),
         ),
     ]

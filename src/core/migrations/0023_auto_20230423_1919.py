@@ -8,18 +8,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0022_subtask_task'),
+        ("core", "0022_subtask_task"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='category',
-            name='color',
-            field=colorfield.fields.ColorField(default='#FFF0000', image_field=None, max_length=18, samples=None),
+            model_name="category",
+            name="color",
+            field=colorfield.fields.ColorField(
+                default="#FFF0000", image_field=None, max_length=18, samples=None
+            ),
         ),
         migrations.AlterField(
-            model_name='subtask',
-            name='task',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, related_name='subtasks', to='core.task'),
+            model_name="subtask",
+            name="task",
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="subtasks",
+                to="core.task",
+            ),
         ),
     ]

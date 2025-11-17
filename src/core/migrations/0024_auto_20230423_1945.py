@@ -7,19 +7,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0023_auto_20230423_1919'),
+        ("core", "0023_auto_20230423_1919"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='due_date',
-            field=models.DateField(default='2023-05-01'),
+            model_name="task",
+            name="due_date",
+            field=models.DateField(default="2023-05-01"),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='subtask',
-            name='task',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subtasks', to='core.task'),
+            model_name="subtask",
+            name="task",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="subtasks",
+                to="core.task",
+            ),
         ),
     ]

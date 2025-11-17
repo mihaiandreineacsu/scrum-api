@@ -8,13 +8,15 @@ import core.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0005_task_link'),
+        ("core", "0005_task_link"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='image',
-            field=models.ImageField(null=True, upload_to=core.models.user_image_file_path),
+            model_name="user",
+            name="image",
+            field=models.ImageField(
+                null=True, upload_to=core.models.user_image_file_path
+            ),
         ),
     ]

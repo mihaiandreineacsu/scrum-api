@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0051_contact_unique_user_phone'),
+        ("core", "0051_contact_unique_user_phone"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='contact',
-            name='unique_user_phone',
+            model_name="contact",
+            name="unique_user_phone",
         ),
     ]
