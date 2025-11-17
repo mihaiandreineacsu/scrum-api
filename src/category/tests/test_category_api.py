@@ -5,7 +5,6 @@ Tests for category APIs.
 from typing import override
 
 from django.db.models.functions import Lower
-from django.db.models.query import QuerySet
 
 from category.serializers import CategorySerializer
 from core.models import Category
@@ -32,7 +31,7 @@ class PrivateCategoryAPITests(PrivateAPITestCase):
     ordering = Lower("name")
     VIEW_NAME = "category"
 
-    queryset: QuerySet[Category, Category] = Category.objects.all()
+    queryset = Category.objects.all()
 
     @override
     def setUp(self):

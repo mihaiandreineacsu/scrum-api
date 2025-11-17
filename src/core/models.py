@@ -2,10 +2,11 @@
 Database models.
 """
 
-from datetime import date, timedelta
 import os
 import uuid
+from datetime import date, timedelta
 from typing import Any, override
+
 from colorfield.fields import ColorField
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -14,36 +15,27 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.utils import timezone
-from phonenumber_field.modelfields import PhoneNumberField
 from ordered_model.models import OrderedModel
+from phonenumber_field.modelfields import PhoneNumberField
 
 from core.utils import PRIORITY_CHOICES, generate_name
 from core.validators import (
     DEFAULT_TEXT_FIELD_MAX_LENGTH,
     DEFAULT_TEXT_FIELD_MIN_LENGTH,
     EMAIL_REGEX,
+    SPACING_REGEX,
+    char_length_validator,
     choice_validator,
     email_validator,
     generate_choice_regex,
     generate_length_regex,
-    char_length_validator,
-    text_length_validator,
     spacing_validator,
-    SPACING_REGEX,
+    text_length_validator,
 )
-
-# from PIL import Image, ImageDraw, ImageFont
-# from io import BytesIO
-# from django.core.files.base import ContentFile
 
 
 def default_due_date() -> date:
     return (timezone.now() + timedelta(days=7)).date()
-
-
-# def get_default_category(user: "User") -> "Category":
-#     """Get the default category for a user."""
-#     return Category.objects.get_or_create(user=user, name="Any")[0]
 
 
 # TODO: limit the image to size and extension
@@ -57,10 +49,7 @@ def user_image_file_path(_: "User | None", filename: str) -> str:
 
 
 class TimeStampedModel(models.Model):
-    """
-    An abstract base class model that provides self-updating
-    `created_at` and `updated_at` fields.
-    """
+    """Abstract base class that adds created_at and updated_at fields to models."""
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -148,14 +137,14 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         constraints = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
-                condition=(
+                check=(
                     models.Q(name__regex=generate_length_regex())
                     & ~models.Q(name__regex=SPACING_REGEX)
                 ),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_email_check",
-                condition=(
+                check=(
                     models.Q(email__regex=EMAIL_REGEX)
                     & models.Q(email__regex=generate_length_regex())
                 ),
@@ -182,7 +171,7 @@ class Board(TimeStampedModel):
         constraints = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_title_check",
-                condition=(
+                check=(
                     models.Q(title__regex=generate_length_regex())
                     & ~models.Q(title__regex=SPACING_REGEX)
                 ),
@@ -194,11 +183,11 @@ class Board(TimeStampedModel):
         return f"{self.title}"
 
 
-class ListOfTasks(TimeStampedModel, OrderedModel):
+class ListOfTasks(OrderedModel, TimeStampedModel):
     """ListOfTasks Object."""
 
     @property
-    def user(self):
+    def user(self) -> User:
         return self.board.user
 
     @user.setter
@@ -228,7 +217,7 @@ class ListOfTasks(TimeStampedModel, OrderedModel):
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
-                condition=(
+                check=(
                     models.Q(name__regex=generate_length_regex())
                     & ~models.Q(name__regex=SPACING_REGEX)
                 ),
@@ -254,7 +243,7 @@ class Category(TimeStampedModel):
             char_length_validator(code="%(app_label)s_%(class)s_name_length_invalid"),
         ],
     )
-    color: ColorField = ColorField(default="#FFF0000")  # TODO: add color validator
+    color = ColorField(default="#FFF0000")  # TODO: add color validator
 
     class Meta:
         verbose_name_plural = "Categories"
@@ -264,7 +253,7 @@ class Category(TimeStampedModel):
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
-                condition=(
+                check=(
                     models.Q(name__regex=generate_length_regex())
                     & ~models.Q(name__regex=SPACING_REGEX)
                 ),
@@ -314,11 +303,11 @@ class Contact(TimeStampedModel):
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_email_check",
-                condition=models.Q(email="") | models.Q(email__regex=EMAIL_REGEX),
+                check=models.Q(email="") | models.Q(email__regex=EMAIL_REGEX),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
-                condition=models.Q(name="")
+                check=models.Q(name="")
                 | (
                     models.Q(name__regex=generate_length_regex())
                     & ~models.Q(name__regex=SPACING_REGEX)
@@ -332,11 +321,11 @@ class Contact(TimeStampedModel):
         return f"{self.name or self.email or self.phone_number} - {self.pk}"
 
 
-class Task(TimeStampedModel, OrderedModel):
+class Task(OrderedModel, TimeStampedModel):
     """Task object."""
 
     @property
-    def user(self):
+    def user(self) -> User:
         return self.list_of_tasks.user
 
     @user.setter
@@ -387,20 +376,18 @@ class Task(TimeStampedModel, OrderedModel):
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_title_check",
-                condition=(
+                check=(
                     models.Q(title__regex=generate_length_regex())
                     & ~models.Q(title__regex=SPACING_REGEX)
                 ),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_priority_check",
-                condition=models.Q(
-                    priority__regex=generate_choice_regex(PRIORITY_CHOICES)
-                ),
+                check=models.Q(priority__regex=generate_choice_regex(PRIORITY_CHOICES)),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_description_check",
-                condition=models.Q(description="")
+                check=models.Q(description="")
                 | models.Q(
                     description__regex=generate_length_regex(
                         min_length=DEFAULT_TEXT_FIELD_MIN_LENGTH,
@@ -419,7 +406,7 @@ class Subtask(TimeStampedModel):
     """Subtask object."""
 
     @property
-    def user(self):
+    def user(self) -> User:
         return self.task.user
 
     @user.setter
@@ -441,7 +428,7 @@ class Subtask(TimeStampedModel):
         constraints = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_title_check",
-                condition=(
+                check=(
                     models.Q(title__regex=generate_length_regex())
                     & ~models.Q(title__regex=SPACING_REGEX)
                 ),

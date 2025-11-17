@@ -3,7 +3,7 @@ Tests for models.
 """
 
 import os
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 
@@ -12,12 +12,12 @@ from core.tests.utils import (
     create_test_board,
     create_test_category,
     create_test_contact,
+    create_test_guestuser,
     create_test_list_of_tasks,
     create_test_subtask,
     create_test_superuser,
     create_test_task,
     create_test_user,
-    create_test_guestuser,
 )
 
 
@@ -71,7 +71,7 @@ class ModelTests(TestCase):
     # TODO: test guest user
 
     @patch("core.models.uuid.uuid4")
-    def test_user_file_name_uuid(self, mock_uuid):
+    def test_user_file_name_uuid(self, mock_uuid: MagicMock):
         """Test generating image path."""
         uuid = "test-uuid"
         mock_uuid.return_value = uuid

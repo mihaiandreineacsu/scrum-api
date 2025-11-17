@@ -21,7 +21,8 @@ class SummaryView(APIView):
     def get(self, request: Request):
         """Retrieve summary for authenticated user."""
         user: User = request.user
-        # Count tasks in each list and include list names and positions and get the latest due date for each
+        # Count tasks in each list and include list names
+        # and positions and get the latest due date for each
         tasks_in_lists = (
             Task.objects.filter(user=user)
             .exclude(list__isnull=True)

@@ -6,6 +6,10 @@ from datetime import date
 from typing import override
 
 from core.models import Category, Contact, ListOfTasks, Subtask, Task
+from core.tests.api_test_case import (
+    PrivateAPITestCase,
+    PublicAPITestCase,
+)
 from core.tests.utils import (
     TEST_OTHER_CONTACT_EMAIL,
     TEST_OTHER_CONTACT_FULL_NAME,
@@ -15,10 +19,6 @@ from core.tests.utils import (
     create_test_list_of_tasks,
     create_test_subtask,
     create_test_task,
-)
-from core.tests.api_test_case import (
-    PrivateAPITestCase,
-    PublicAPITestCase,
 )
 from task.serializers import TaskSerializer
 

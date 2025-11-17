@@ -2,7 +2,7 @@
 Tests for subtask APIs.
 """
 
-from typing import Any
+from typing import Any, override
 
 from django.test import TestCase
 from django.urls import reverse
@@ -20,6 +20,7 @@ def detail_url(summary_id: Any):
 class PublicSummaryAPITests(TestCase):
     """Test unauthenticated API requests."""
 
+    @override
     def setUp(self):
         self.client = APIClient()
 

@@ -3,6 +3,7 @@ Views for the user API.
 """
 
 from typing import Any, override
+
 from rest_framework import (
     authentication,
     generics,
@@ -45,7 +46,7 @@ class CreateTokenView(ObtainAuthToken):
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
 
 
-class ManageUserView(generics.RetrieveUpdateAPIView):
+class ManageUserView(generics.RetrieveUpdateAPIView, generics.DestroyAPIView):
     """Manage the authenticated user."""
 
     serializer_class = UserSerializer
@@ -58,11 +59,6 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
     @override
-    def get_serializer_class(self):
-        """Return the serializer class for request."""
-        return self.serializer_class
-
-    # TODO: why delete in retrieve update api view?
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Handle user deletion."""
         user = self.get_object()
@@ -70,7 +66,7 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserUploadImageView(viewsets.ModelViewSet[User]):
+class UserUploadImageView(viewsets.ModelViewSet):
     serializer_class = UserImageSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsNotGuestUser]
@@ -79,11 +75,6 @@ class UserUploadImageView(viewsets.ModelViewSet[User]):
     def get_object(self) -> User:
         """Retrieve and return the authenticated user."""
         return self.request.user
-
-    @override
-    def get_serializer_class(self) -> type[UserImageSerializer]:
-        """Return the serializer class for request."""
-        return self.serializer_class
 
     @action(methods=["POST"], detail=True, url_path="upload-image")
     def upload_image(self, request: Request, pk=None):

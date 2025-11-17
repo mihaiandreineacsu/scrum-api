@@ -1,10 +1,11 @@
 from typing import Any
+
 from django.core.mail import EmailMultiAlternatives
 from django.dispatch import Signal, receiver
 from django.template.loader import render_to_string
+from django_rest_passwordreset.models import ResetPasswordToken
 from django_rest_passwordreset.signals import reset_password_token_created
 from django_rest_passwordreset.views import ResetPasswordRequestToken
-from django_rest_passwordreset.models import ResetPasswordToken
 
 from app.settings import DEFAULT_FROM_EMAIL
 
@@ -33,11 +34,7 @@ def password_reset_token_created(
         "username": reset_password_token.user.name,
         "email": reset_password_token.user.email,
         "absolute_uri": instance.request.META.get("HTTP_ORIGIN"),
-        "reset_password_url": "{}{}?token={}".format(
-            instance.request.META.get("HTTP_ORIGIN"),
-            "/auth/reset-password",
-            reset_password_token.key,
-        ),
+        "reset_password_url": f"{instance.request.META.get('HTTP_ORIGIN')}/auth/reset-password?token={reset_password_token.key}",
     }
 
     # print(f"request origin: {instance.request.META.get('HTTP_ORIGIN')}")

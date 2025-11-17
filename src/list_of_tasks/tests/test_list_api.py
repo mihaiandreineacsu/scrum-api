@@ -4,8 +4,6 @@ Tests for list APIs.
 
 from typing import override
 
-from django.db.models.query import QuerySet
-
 from core.models import Board, ListOfTasks
 from core.tests.api_test_case import (
     PrivateAPITestCase,
@@ -40,7 +38,7 @@ class PrivateListAPITests(PrivateAPITestCase):
     ordering = "-order"
     VIEW_NAME = "list"
 
-    queryset: QuerySet[ListOfTasks, ListOfTasks] = ListOfTasks.objects.all()
+    queryset = ListOfTasks.objects.all()
 
     @override
     def get_queryset(self):

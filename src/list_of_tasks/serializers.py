@@ -2,18 +2,16 @@
 Serializers for ListOfTasks APIs
 """
 
-from typing import Any
 from rest_framework.serializers import ModelSerializer
-from rest_framework.utils.serializer_helpers import ReturnDict
+
 from core.models import ListOfTasks
 from task.serializers import TaskSerializer
 
 
-class ListSerializer(ModelSerializer[ListOfTasks]):
+class ListSerializer(ModelSerializer):
     """Serializer for lists."""
 
     tasks = TaskSerializer(many=True, read_only=True)
-    data: ReturnDict[str, Any]
 
     class Meta:
         model = ListOfTasks

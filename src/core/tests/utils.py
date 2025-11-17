@@ -2,9 +2,7 @@ from typing import Any
 
 from django.urls import reverse
 
-from core.models import Board, Category, Contact
-from core.models import ListOfTasks
-from core.models import Subtask, Task, User
+from core.models import Board, Category, Contact, ListOfTasks, Subtask, Task, User
 
 TEST_USER_EMAIL = "johndoe@example.com"
 TEST_USER_FULL_NAME = "John Doe"

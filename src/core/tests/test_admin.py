@@ -3,6 +3,7 @@ Tests for the Django admin modifications.
 """
 
 from typing import override
+
 from django.test import Client, TestCase
 from django.urls import reverse
 

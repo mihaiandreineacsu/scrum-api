@@ -10,7 +10,6 @@ from django.test import TestCase
 from django.urls import reverse
 from PIL import Image
 from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from core.models import User
@@ -40,7 +39,7 @@ class PublicUserApiTests(TestCase):
             "password": "password123",
             "name": "John Doe",
         }
-        res: Response = self.client.post(CREATE_USER_URL, payload)
+        res = self.client.post(CREATE_USER_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         user = User.objects.get(email=payload["email"])
@@ -81,7 +80,7 @@ class PublicUserApiTests(TestCase):
         }
         _ = create_test_user(**payload)
 
-        res: Response = self.client.post(TOKEN_URL, payload)
+        res = self.client.post(TOKEN_URL, payload)
 
         self.assertIn("token", res.data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
@@ -91,7 +90,7 @@ class PublicUserApiTests(TestCase):
         _ = create_test_user(password="goodpass")
 
         payload = {"email": "johndoe@example", "password": "badpass"}
-        res: Response = self.client.post(TOKEN_URL, payload)
+        res = self.client.post(TOKEN_URL, payload)
 
         self.assertNotIn("token", res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
@@ -99,7 +98,7 @@ class PublicUserApiTests(TestCase):
     def test_create_token_blank_password(self):
         """Test posting a blank password returns an error."""
         payload = {"email": "johndoe@example.com", "password": ""}
-        res: Response = self.client.post(TOKEN_URL, payload)
+        res = self.client.post(TOKEN_URL, payload)
 
         self.assertNotIn("token", res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
@@ -124,7 +123,7 @@ class PrivateUserApiTests(TestCase):
 
     def test_retrieve_profile_success(self):
         """Test retrieving profile for logged in user."""
-        res: Response = self.client.get(ME_URL)
+        res = self.client.get(ME_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["name"], self.user.name)
@@ -141,7 +140,7 @@ class PrivateUserApiTests(TestCase):
         """Test updating the user profile for the authenticated user."""
         payload = {"name": "John Wick", "password": "newpassword123"}
 
-        res: Response = self.client.patch(ME_URL, payload)
+        res = self.client.patch(ME_URL, payload)
 
         self.user.refresh_from_db()
         self.assertEqual(self.user.name, payload["name"])
@@ -174,7 +173,7 @@ class ImageUploadTests(TestCase):
             img.save(image_file, format="JPEG")
             _ = image_file.seek(0)
             payload = {"image": image_file}
-            res: Response = self.client.post(url, payload, format="multipart")
+            res = self.client.post(url, payload, format="multipart")
 
         self.user.refresh_from_db()
         self.assertEqual(res.status_code, status.HTTP_200_OK)

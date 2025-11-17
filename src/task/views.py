@@ -3,18 +3,20 @@ Views for the task APIs.
 """
 
 from typing import override
-from django.db.models.query import QuerySet
+
 from django.db.models import Prefetch
-from rest_framework.filters import SearchFilter
+from django.db.models.query import QuerySet
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
 
 from core.models import Subtask, Task
 from task.serializers import TaskSerializer
 
 
-class TaskViewSet(ModelViewSet[Task]):
+class TaskViewSet(ModelViewSet):
     """View for manage task APIs."""
 
     serializer_class = TaskSerializer
@@ -24,8 +26,9 @@ class TaskViewSet(ModelViewSet[Task]):
     filter_backends = [SearchFilter]
 
     @override
-    def get_queryset(self) -> QuerySet[Task, Task]:
+    def get_queryset(self) -> QuerySet[Task]:
         """Retrieve tasks for authenticated user."""
+        assert self.queryset is not None
         queryset = (
             self.queryset.filter(list_of_tasks__board__user=self.request.user)
             .order_by("-order")
@@ -37,14 +40,6 @@ class TaskViewSet(ModelViewSet[Task]):
         return queryset
 
     @override
-    def get_serializer_class(self) -> type[TaskSerializer]:
-        """Return the serializer class for request."""
-        if self.action == "list":
-            return TaskSerializer
-
-        return self.serializer_class
-
-    @override
-    def perform_create(self, serializer: TaskSerializer):
+    def perform_create(self, serializer: BaseSerializer):
         """Create a new task."""
         _ = serializer.save(user=self.request.user)

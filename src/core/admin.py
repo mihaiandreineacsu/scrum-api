@@ -2,16 +2,13 @@
 Django admin customization.
 """
 
-from typing import override
-from django.http.request import HttpRequest
-from ordered_model.admin import (
-    OrderedStackedInline,
-    OrderedInlineModelAdminMixin,
-)
-
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
+from ordered_model.admin import (
+    OrderedInlineModelAdminMixin,
+    OrderedStackedInline,
+)
 
 from core import models
 
@@ -76,15 +73,6 @@ class BoardAdmin(OrderedInlineModelAdminMixin, admin.ModelAdmin):
     list_filter = ["user", "created_at", "updated_at"]
     search_fields = ["title", "user"]
     inlines = (BoardListsOfTasksInLine,)
-
-    def save_formset(
-        self,
-        request: HttpRequest,
-        form: models.Any,
-        formset: models.Any,
-        change: models.Any,
-    ) -> None:
-        return super().save_formset(request, form, formset, change)
 
 
 class ListsOfTaskTasksInline(OrderedStackedInline):
@@ -172,11 +160,3 @@ class SubtaskAdmin(admin.ModelAdmin):
     list_display = ["id", "title", "done", "created_at", "updated_at"]
     list_filter = ["done", "created_at", "updated_at"]
     search_fields = ["title"]
-
-
-# class SummaryAdmin(admin.ModelAdmin):
-#     ordering = ["id"]
-#     list_display = ["id", "created_at", "updated_at", "user"]
-#     list_filter = ["created_at", "updated_at", "user"]
-#     search_fields = ["user"]
-# admin.site.register(models.Summary, SummaryAdmin)

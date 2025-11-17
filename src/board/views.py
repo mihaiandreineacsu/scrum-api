@@ -6,29 +6,30 @@ from typing import override
 
 from django.db.models import Prefetch
 from django.db.models.query import QuerySet
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.serializers import BaseSerializer
+from rest_framework.viewsets import ModelViewSet
 
 from board.serializers import BoardSerializer
 from core.models import Board, ListOfTasks, Task
 
 
-class BoardViewSet(ModelViewSet[Board]):
+class BoardViewSet(ModelViewSet):
     """View for manage board APIs."""
 
-    serializer_class: type[BoardSerializer] = BoardSerializer
-    queryset: QuerySet[Board, Board] = Board.objects.all()
+    serializer_class = BoardSerializer
+    queryset = Board.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     @override
-    def get_queryset(self) -> QuerySet[Board, Board]:
+    def get_queryset(self) -> QuerySet[Board]:
         """
         Retrieve boards for authenticated user
         with lists_of_tasks and tasks ordered by order.
         """
-        # TODO: Is this covered by tests?
+        assert self.queryset is not None
         return (
             self.queryset.filter(user=self.request.user)
             .prefetch_related(
@@ -43,14 +44,6 @@ class BoardViewSet(ModelViewSet[Board]):
         )
 
     @override
-    def get_serializer_class(self) -> type[BoardSerializer]:
-        """Return the serializer class for request."""
-        if self.action == "list":
-            return BoardSerializer
-
-        return self.serializer_class
-
-    @override
-    def perform_create(self, serializer: BoardSerializer):
+    def perform_create(self, serializer: BaseSerializer):
         """Create a new board."""
         _ = serializer.save(user=self.request.user)

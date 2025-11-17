@@ -2,9 +2,7 @@
 Tests for board APIs.
 """
 
-from typing import override
-
-from django.db.models.query import QuerySet
+from typing_extensions import override
 
 from board.serializers import BoardSerializer
 from core.models import Board
@@ -15,7 +13,7 @@ from core.tests.utils import create_test_board
 class PublicBoardAPITests(PublicAPITestCase):
     """Test unauthenticated API requests."""
 
-    VIEW_NAME = "board"
+    VIEW_NAME: str = "board"
 
     def test_auth_required(self):
         self.assert_auth_required()
@@ -29,9 +27,9 @@ class PrivateBoardAPITests(PrivateAPITestCase):
     api_model = Board
     api_serializer = BoardSerializer
 
-    VIEW_NAME = "board"
+    VIEW_NAME: str = "board"
 
-    queryset: QuerySet[Board, Board] = Board.objects.all()
+    queryset = Board.objects.all()
 
     @override
     def setUp(self):

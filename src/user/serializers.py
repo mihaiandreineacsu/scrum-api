@@ -10,7 +10,7 @@ from rest_framework import serializers
 from core.models import User
 
 
-class UserSerializer(serializers.ModelSerializer[User]):
+class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user object."""
 
     class Meta:
@@ -74,7 +74,7 @@ class AuthTokenSerializer(serializers.Serializer):
         return attrs
 
 
-class UserImageSerializer(serializers.ModelSerializer[User]):
+class UserImageSerializer(serializers.ModelSerializer):
     """Serializer for uploading images to users."""
 
     class Meta:

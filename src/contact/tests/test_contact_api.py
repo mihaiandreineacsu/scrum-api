@@ -5,17 +5,16 @@ Tests for contact APIs.
 from typing import override
 
 from django.db.models.functions import Lower
-from django.db.models.query import QuerySet
 
 from contact.serializers import ContactSerializer
 from core.models import Contact
+from core.tests.api_test_case import PrivateAPITestCase, PublicAPITestCase
 from core.tests.utils import (
     TEST_OTHER_CONTACT_EMAIL,
     TEST_OTHER_CONTACT_FULL_NAME,
     TEST_OTHER_CONTACT_PHONE_NUMBER,
     create_test_contact,
 )
-from core.tests.api_test_case import PrivateAPITestCase, PublicAPITestCase
 
 
 class PublicContactAPITests(PublicAPITestCase):
@@ -40,7 +39,7 @@ class PrivateContactAPITests(PrivateAPITestCase):
 
     VIEW_NAME = "contact"
 
-    queryset: QuerySet[Contact, Contact] = Contact.objects.all()
+    queryset = Contact.objects.all()
 
     @override
     def setUp(self) -> None:

@@ -9,15 +9,12 @@ exclude = ['^venv/', "^env/"]
 explicit_package_bases = true
 mypy_path = "stubs"
 
-[tool.pyright]
-pythonVersion = 3.13
+[tool.basedpyright]
+pythonVersion = "3.13"
 include = ["src"]
 exclude = ["^venv/", "^env/"]
 extraPaths = ["src"]
-autoSearchPaths = true
-
-# Enable strict type checking
-strict = true
+useLibraryCodeForTypes = true
 
 # Type checking settings
 reportMissingImports = "error"
@@ -37,7 +34,7 @@ reportUntypedClassDecorator = "error"
 
 # Report settings
 reportReturnType = "error"
-reportFunctionReturnType = "error"
+# reportFunctionReturnType = "error"
 reportAssignmentType = "error"
 reportArgumentType = "error"
 reportAttributeAccessIssue = "error"
@@ -68,7 +65,7 @@ reportConstantRedefinition = "error"
 reportPrivateUsage = "error"
 reportPrivateImportUsage = "error"
 reportDuplicateImport = "error"
-reportShadowedImports = "error"
+# reportShadowedImports = "error"
 reportUnusedImport = "error"
 reportUnusedFunction = "error"
 reportUnusedClass = "error"
@@ -101,7 +98,6 @@ reportMissingSuperCall = "error"
 reportUninitializedInstanceVariable = "error"
 reportUnreachable = "error"
 
-# Experimental and advanced settings
 enableTypeIgnoreComments = true
 enableReachabilityAnalysis = true
 strictListInference = true
@@ -109,21 +105,10 @@ strictDictionaryInference = true
 strictSetInference = true
 deprecateTypingAliases = true
 enableExperimentalFeatures = false
-
-# Define constants
 defineConstant = { DEBUG = true }
-
-# Analyze unannotated functions
 analyzeUnannotatedFunctions = true
-
-# Disable bytes type promotions
 disableBytesTypePromotions = true
-
-# Strict parameter None value
 strictParameterNoneValue = true
-
-[tool.django-stubs]
-django_settings_module = "src.app.settings"
 
 [tool.black]
 line-length = 88
@@ -143,19 +128,22 @@ exclude = '''
 )/
 '''
 
-[tool.pylint]
+[tool.pylint.main]
+source = "src"
 max-line-length = 88
 load-plugins = ["pylint_django"]
 ignore = ["migrations", "venv", ".venv", "__pycache__"]
 django-settings-module = "app.settings"
 disable = ["W0511", "C0114", "C0115", "C0116"]
 
+[tool.django-stubs]
+django_settings_module = "src.app.settings"
 
 [tool.isort]
 profile = "black"
 line_length = 88
-skip = ["migrations", "venv", ".venv", "__pycache__"]
-skip_glob = ["*/migrations/*", "*.venv/*"]
+skip = ["venv", ".venv", "__pycache__"]
+skip_glob = ["*.venv/*"]
 
 [tool.coverage.run]
 branch = true
@@ -186,3 +174,6 @@ directory = "coverage_html_report"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "src.app.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "--cov=src --cov-report=term-missing --cov-report=html:coverage_html_report"
+python_paths = "src"

@@ -1,15 +1,15 @@
-from typing import Any, override
 from datetime import date
+from typing import Any, override
+
+from django.db.models import BaseManager, Model
 from django.urls import reverse
-from django.db.models import Model
-from django.db.models.query import QuerySet
-from rest_framework.test import APIClient
-from rest_framework.test import APITestCase as RestAPITestCase
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
+from rest_framework.test import APIClient
+from rest_framework.test import APITestCase as RestAPITestCase
 
-from core.models import User, ScrumAPIModel
+from core.models import ScrumAPIModel, User
 from core.tests.utils import (
     TEST_OTHER_USER_EMAIL,
     TEST_OTHER_USER_PASSWORD,
@@ -51,7 +51,7 @@ class PrivateAPITestCase(ScrumAPITestCase):
     api_serializer = type(ModelSerializer[ScrumAPIModel])
     ordering = "-id"
 
-    queryset: QuerySet[ScrumAPIModel] = QuerySet()
+    queryset = BaseManager[ScrumAPIModel]()
 
     VIEW_NAME = ""
 
