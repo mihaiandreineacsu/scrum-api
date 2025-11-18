@@ -6,14 +6,14 @@ from typing import Any, override
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-
+from common.serializers_base import ModelSerializerMetaBase, UserModelSerializer
 from core.models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(UserModelSerializer):
     """Serializer for the user object."""
 
-    class Meta:
+    class Meta(ModelSerializerMetaBase):
         model = User
         fields = [
             "email",
@@ -74,10 +74,10 @@ class AuthTokenSerializer(serializers.Serializer):
         return attrs
 
 
-class UserImageSerializer(serializers.ModelSerializer):
+class UserImageSerializer(UserModelSerializer):
     """Serializer for uploading images to users."""
 
-    class Meta:
+    class Meta(ModelSerializerMetaBase):
         model = User
         fields = ["id", "image"]
         read_only_fields = ["id"]

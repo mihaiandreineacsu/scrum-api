@@ -2,18 +2,17 @@
 Serializers for ListOfTasks APIs
 """
 
-from rest_framework.serializers import ModelSerializer
-
+from common.serializers_base import ListOfTasksBasedSerializer, ModelSerializerMetaBase
 from core.models import ListOfTasks
 from task.serializers import TaskSerializer
 
 
-class ListSerializer(ModelSerializer):
+class ListSerializer(ListOfTasksBasedSerializer):
     """Serializer for lists."""
 
     tasks = TaskSerializer(many=True, read_only=True)
 
-    class Meta:
+    class Meta(ModelSerializerMetaBase):
         model = ListOfTasks
         fields = [
             "id",

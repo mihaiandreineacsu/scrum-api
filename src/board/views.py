@@ -9,13 +9,14 @@ from django.db.models.query import QuerySet
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.serializers import BaseSerializer
-from rest_framework.viewsets import ModelViewSet
 
 from board.serializers import BoardSerializer
+from common.serializers_base import BoardBasedSerializer
+from common.views_base import BoardModelViewSet
 from core.models import Board, ListOfTasks, Task
 
 
-class BoardViewSet(ModelViewSet):
+class BoardViewSet(BoardModelViewSet):
     """View for manage board APIs."""
 
     serializer_class = BoardSerializer
@@ -44,6 +45,6 @@ class BoardViewSet(ModelViewSet):
         )
 
     @override
-    def perform_create(self, serializer: BaseSerializer):
+    def perform_create(self, serializer: BoardBasedSerializer):
         """Create a new board."""
         _ = serializer.save(user=self.request.user)

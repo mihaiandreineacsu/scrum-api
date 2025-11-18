@@ -12,11 +12,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
 
+from common.serializers_base import TaskBasedSerializer
+from common.views_base import TaskModelViewSet
 from core.models import Subtask, Task
 from task.serializers import TaskSerializer
 
 
-class TaskViewSet(ModelViewSet):
+class TaskViewSet(TaskModelViewSet):
     """View for manage task APIs."""
 
     serializer_class = TaskSerializer
@@ -40,6 +42,6 @@ class TaskViewSet(ModelViewSet):
         return queryset
 
     @override
-    def perform_create(self, serializer: BaseSerializer):
+    def perform_create(self, serializer: TaskBasedSerializer):
         """Create a new task."""
         _ = serializer.save(user=self.request.user)

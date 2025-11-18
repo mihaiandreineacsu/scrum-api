@@ -9,7 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.models import Task, User
+from core.models import Task
 
 
 class SummaryView(APIView):
@@ -20,7 +20,7 @@ class SummaryView(APIView):
 
     def get(self, request: Request):
         """Retrieve summary for authenticated user."""
-        user: User = request.user
+        user = request.user
         # Count tasks in each list and include list names
         # and positions and get the latest due date for each
         tasks_in_lists = (

@@ -9,15 +9,15 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.serializers import BaseSerializer
 from rest_framework.status import HTTP_400_BAD_REQUEST
-from rest_framework.viewsets import ModelViewSet
 
+from common.serializers_base import ContactBasedSerializer
+from common.views_base import ContactModelViewSet
 from contact.serializers import ContactSerializer
 from core.models import Contact
 
 
-class ContactViewSet(ModelViewSet):
+class ContactViewSet(ContactModelViewSet):
     """View for manage contact APIs."""
 
     serializer_class = ContactSerializer
@@ -32,7 +32,7 @@ class ContactViewSet(ModelViewSet):
         return self.queryset.filter(user=self.request.user).order_by(Lower("name"))
 
     @override
-    def perform_create(self, serializer: BaseSerializer):
+    def perform_create(self, serializer: ContactBasedSerializer):
         """Create a new contact."""
         _ = serializer.save(user=self.request.user)
 

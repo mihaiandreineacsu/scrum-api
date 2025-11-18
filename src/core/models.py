@@ -41,7 +41,7 @@ def default_due_date() -> date:
 # TODO: limit the image to size and extension
 # Also when user gets deleted, delete the image
 # Also when user image is updated / cleared, delete the old image
-def user_image_file_path(_: "User | None", filename: str) -> str:
+def user_image_file_path(_: models.Model, filename: str) -> str:
     """Generate file path for new user image."""
     ext = os.path.splitext(filename)[1]
     filename = f"{uuid.uuid4()}{ext}"

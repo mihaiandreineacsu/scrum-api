@@ -3,18 +3,26 @@ Django admin customization.
 """
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 from ordered_model.admin import (
     OrderedInlineModelAdminMixin,
     OrderedStackedInline,
 )
 
+from common.admins_base import (
+    UserModelAdmin,
+    BoardModelAdmin,
+    CategoryModelAdmin,
+    ContactModelAdmin,
+    TaskModelAdmin,
+    SubtaskModelAdmin,
+    ListOfTasksModelAdmin,
+)
 from core import models
 
 
 @admin.register(models.User)
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(UserModelAdmin):
     """Define the admin pages for users."""
 
     ordering = ["id"]
@@ -67,7 +75,10 @@ class BoardListsOfTasksInLine(OrderedStackedInline):
 
 
 @admin.register(models.Board)
-class BoardAdmin(OrderedInlineModelAdminMixin, admin.ModelAdmin):
+class BoardAdmin(
+    OrderedInlineModelAdminMixin,
+    BoardModelAdmin,
+):
     ordering = ["id"]
     list_display = ["id", "title", "user", "created_at", "updated_at"]
     list_filter = ["user", "created_at", "updated_at"]
@@ -90,7 +101,10 @@ class ListsOfTaskTasksInline(OrderedStackedInline):
 
 
 @admin.register(models.ListOfTasks)
-class ListAdmin(OrderedInlineModelAdminMixin, admin.ModelAdmin):
+class ListAdmin(
+    OrderedInlineModelAdminMixin,
+    ListOfTasksModelAdmin,
+):
     ordering = ["id"]
     list_display = [
         "id",
@@ -107,7 +121,7 @@ class ListAdmin(OrderedInlineModelAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(models.Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(CategoryModelAdmin):
     ordering = ["id"]
     list_display = ["id", "name", "user", "color", "created_at", "updated_at"]
     list_filter = ["created_at", "updated_at", "user"]
@@ -115,7 +129,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Contact)
-class ContactAdmin(admin.ModelAdmin):
+class ContactAdmin(ContactModelAdmin):
     ordering = ["id"]
     list_display = [
         "id",
@@ -131,7 +145,7 @@ class ContactAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Task)
-class TaskAdmin(admin.ModelAdmin):
+class TaskAdmin(TaskModelAdmin):
     ordering = ["id"]
     list_display = [
         "id",
@@ -155,7 +169,7 @@ class TaskAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Subtask)
-class SubtaskAdmin(admin.ModelAdmin):
+class SubtaskAdmin(SubtaskModelAdmin):
     ordering = ["id"]
     list_display = ["id", "title", "done", "created_at", "updated_at"]
     list_filter = ["done", "created_at", "updated_at"]

@@ -10,7 +10,6 @@ from rest_framework import (
     generics,
     permissions,
     status,
-    viewsets,
 )
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -20,6 +19,7 @@ from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 
+from common.views_base import UserModelViewSet
 from core.models import User
 from user.permissions import IsNotGuestUser
 from user.serializers import AuthTokenSerializer, UserImageSerializer, UserSerializer
@@ -67,7 +67,7 @@ class ManageUserView(generics.RetrieveUpdateAPIView, generics.DestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserUploadImageView(viewsets.ModelViewSet):
+class UserUploadImageView(UserModelViewSet):
     serializer_class = UserImageSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsNotGuestUser]

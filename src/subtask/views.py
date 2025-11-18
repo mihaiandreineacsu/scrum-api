@@ -10,11 +10,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
 
+from common.serializers_base import SubtaskBasedSerializer
+from common.views_base import SubtaskModelViewSet
 from core.models import Subtask
 from subtask.serializers import SubtaskSerializer
 
 
-class SubtaskViewSet(ModelViewSet):
+class SubtaskViewSet(SubtaskModelViewSet):
     """View for manage subtask APIs."""
 
     serializer_class = SubtaskSerializer
@@ -31,6 +33,6 @@ class SubtaskViewSet(ModelViewSet):
         ).order_by("-id")
 
     @override
-    def perform_create(self, serializer: BaseSerializer):
+    def perform_create(self, serializer: SubtaskBasedSerializer):
         """Create a new subtask."""
         _ = serializer.save(user=self.request.user)

@@ -11,14 +11,14 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.serializers import BaseSerializer
-from rest_framework.viewsets import ModelViewSet
 
+from common.serializers_base import ListOfTasksBasedSerializer
+from common.views_base import ListOfTasksModelViewSet
 from core.models import ListOfTasks, Task
 from list_of_tasks.serializers import ListSerializer
 
 
-class ListViewSet(ModelViewSet):
+class ListViewSet(ListOfTasksModelViewSet):
     """View for manage list APIs."""
 
     serializer_class = ListSerializer
@@ -56,6 +56,6 @@ class ListViewSet(ModelViewSet):
         return Response(ListSerializer(list_of_tasks).data)
 
     @override
-    def perform_create(self, serializer: BaseSerializer):
+    def perform_create(self, serializer: ListOfTasksBasedSerializer):
         """Create a new list."""
         _ = serializer.save(user=self.request.user)

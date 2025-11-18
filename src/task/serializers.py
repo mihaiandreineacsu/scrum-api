@@ -5,14 +5,14 @@ Serializers for Task APIs
 from typing import Any, override
 
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
-
+from common.serializers_base import ModelSerializerMetaBase, TaskModelSerializer
 from category.serializers import CategorySerializer
 from contact.serializers import ContactSerializer
 from core.models import Category, Contact, ListOfTasks, Subtask, Task
 from subtask.serializers import SubtaskSerializer
 
 
-class TaskSerializer(ModelSerializer):
+class TaskSerializer(TaskModelSerializer):
     """Serializer for tasks."""
 
     subtasks = SubtaskSerializer(many=True, required=False)
@@ -29,7 +29,7 @@ class TaskSerializer(ModelSerializer):
         allow_null=True,
     )
 
-    class Meta:
+    class Meta(ModelSerializerMetaBase):
         model = Task
         fields = [
             "id",
