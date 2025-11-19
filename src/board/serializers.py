@@ -3,7 +3,9 @@ Serializers for Board APIs
 """
 
 from typing import TYPE_CHECKING
+
 from rest_framework.serializers import ModelSerializer
+
 from common.serializers_base import BoardModelSerializer
 from core.models import Board
 from list_of_tasks.serializers import ListSerializer

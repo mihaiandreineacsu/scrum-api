@@ -63,7 +63,7 @@ class TimeStampedModel(models.Model):
         updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        abstract: bool = True
+        abstract = True
 
 
 if TYPE_CHECKING:
@@ -156,7 +156,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     is_guest = models.BooleanField(default=False)
     objects: CustomUserManager = CustomUserManager()
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
         constraints: list[CheckConstraint] = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
@@ -183,7 +183,7 @@ class Board(TimeStampedModel):
         title: models.CharField[str, str]
 
     user = models.ForeignKey(
-        User,
+        to=User,
         on_delete=models.CASCADE,
     )
     title = models.CharField(
@@ -194,7 +194,7 @@ class Board(TimeStampedModel):
         ],
     )
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
         constraints: list[CheckConstraint] = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_title_check",
@@ -210,7 +210,9 @@ class Board(TimeStampedModel):
         return f"{self.title}"
 
 
-class ListOfTasks(OrderedModel, TimeStampedModel):
+class ListOfTasks(  # pyright: ignore[reportUnsafeMultipleInheritance]
+    OrderedModel, TimeStampedModel
+):
     """ListOfTasks Object."""
 
     if TYPE_CHECKING:
@@ -234,13 +236,15 @@ class ListOfTasks(OrderedModel, TimeStampedModel):
         ],
     )
     board = models.ForeignKey(
-        Board,
+        to=Board,
         on_delete=models.PROTECT,
         related_name="lists_of_tasks",
     )
     order_with_respect_to: str = "board"
 
-    class Meta(OrderedModel.Meta):
+    class Meta(  # pyright: ignore[reportIncompatibleVariableOverride]
+        OrderedModel.Meta
+    ):
         verbose_name_plural: str = "ListsOfTasks"
         constraints: list[UniqueConstraint | CheckConstraint] = [
             models.UniqueConstraint(
@@ -268,7 +272,7 @@ class Category(TimeStampedModel):
         name: models.CharField[str, str]
 
     user = models.ForeignKey(
-        User,
+        to=User,
         on_delete=models.CASCADE,
     )
     name = models.CharField(
@@ -280,7 +284,7 @@ class Category(TimeStampedModel):
     )
     color: ColorField = ColorField(default="#FFF0000")  # TODO: add color validator
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
         verbose_name_plural: str = "Categories"
         constraints: list[UniqueConstraint | CheckConstraint] = [
             models.UniqueConstraint(
@@ -309,7 +313,7 @@ class Contact(TimeStampedModel):
         email: models.EmailField[str, str]
 
     user = models.ForeignKey(
-        User,
+        to=User,
         on_delete=models.CASCADE,
     )
     email = models.EmailField(
@@ -329,7 +333,7 @@ class Contact(TimeStampedModel):
     )
     phone_number = PhoneNumberField(blank=True)
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
         constraints: list[UniqueConstraint | CheckConstraint] = [
             models.UniqueConstraint(
                 fields=["user", "email"],
@@ -361,7 +365,9 @@ class Contact(TimeStampedModel):
         return f"{self.name or self.email or self.phone_number} - {self.pk}"
 
 
-class Task(OrderedModel, TimeStampedModel):
+class Task(  # pyright: ignore[reportUnsafeMultipleInheritance]
+    OrderedModel, TimeStampedModel
+):
     """Task object."""
 
     if TYPE_CHECKING:
@@ -397,8 +403,8 @@ class Task(OrderedModel, TimeStampedModel):
             )
         ],
     )
-    category = models.ForeignKey(Category, on_delete=models.PROTECT)
-    assignees = models.ManyToManyField(Contact, blank=True, related_name="tasks")
+    category = models.ForeignKey(to=Category, on_delete=models.PROTECT)
+    assignees = models.ManyToManyField(to=Contact, blank=True, related_name="tasks")
     due_date = models.DateField(default=default_due_date)
     priority = models.CharField(
         choices=PRIORITY_CHOICES,
@@ -411,14 +417,16 @@ class Task(OrderedModel, TimeStampedModel):
         ],
     )
     list_of_tasks = models.ForeignKey(
-        ListOfTasks,
+        to=ListOfTasks,
         on_delete=models.PROTECT,
         related_name="tasks",
     )
 
     order_with_respect_to: str = "list_of_tasks"
 
-    class Meta(OrderedModel.Meta):
+    class Meta(  # pyright: ignore[reportIncompatibleVariableOverride]
+        OrderedModel.Meta
+    ):
         constraints: list[UniqueConstraint | CheckConstraint] = [
             models.UniqueConstraint(
                 fields=["list_of_tasks", "order"], name="unique_order_per_list"
@@ -470,7 +478,7 @@ class Subtask(TimeStampedModel):
         self.task.user = value
         self.task.save()
 
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="subtasks")
+    task = models.ForeignKey(to=Task, on_delete=models.CASCADE, related_name="subtasks")
     title = models.CharField(
         default="Untitled",
         validators=[
@@ -480,7 +488,7 @@ class Subtask(TimeStampedModel):
     )
     done = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
         constraints: list[CheckConstraint] = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_title_check",

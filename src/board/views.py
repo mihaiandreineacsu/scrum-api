@@ -44,6 +44,9 @@ class BoardViewSet(BoardModelViewSet):
         )
 
     @override
-    def perform_create(self, serializer: BoardBasedSerializer):
+    def perform_create(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self,
+        serializer: BoardBasedSerializer,
+    ):
         """Create a new board."""
         _ = serializer.save(user=self.request.user)

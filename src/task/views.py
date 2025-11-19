@@ -40,6 +40,8 @@ class TaskViewSet(TaskModelViewSet):
         return queryset
 
     @override
-    def perform_create(self, serializer: TaskBasedSerializer):
+    def perform_create(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self, serializer: TaskBasedSerializer
+    ):
         """Create a new task."""
         _ = serializer.save(user=self.request.user)

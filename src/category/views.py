@@ -30,6 +30,8 @@ class CategoryViewSet(CategoryModelViewSet):
         return self.queryset.filter(user=self.request.user).order_by(Lower("name"))
 
     @override
-    def perform_create(self, serializer: CategoryBasedSerializer):
+    def perform_create(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self, serializer: CategoryBasedSerializer
+    ):
         """Create a new category."""
         _ = serializer.save(user=self.request.user)

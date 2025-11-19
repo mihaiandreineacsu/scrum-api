@@ -5,6 +5,7 @@ Serializers for Category APIs
 from typing import TYPE_CHECKING
 
 from rest_framework.serializers import ModelSerializer
+
 from common.serializers_base import CategoryModelSerializer
 from core.models import Category
 

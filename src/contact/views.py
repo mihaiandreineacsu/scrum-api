@@ -33,7 +33,9 @@ class ContactViewSet(ContactModelViewSet):
         return self.queryset.filter(user=self.request.user).order_by(Lower("name"))
 
     @override
-    def perform_create(self, serializer: ContactBasedSerializer):
+    def perform_create(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self, serializer: ContactBasedSerializer
+    ):
         """Create a new contact."""
         _ = serializer.save(user=self.request.user)
 

@@ -1,6 +1,5 @@
 from typing import Any
 
-from django.http import HttpResponse
 from django.urls import reverse
 
 from core.models import Board, Category, Contact, ListOfTasks, Subtask, Task, User
@@ -165,7 +164,7 @@ def create_test_subtask(
     return Subtask.objects.create(title=title, task=task, done=done, **params)
 
 
-def validate_response_data(response: HttpResponse) -> dict[str, Any]:
+def validate_response_data(response: Any) -> dict[str, Any]:
     """Validate that the response has data and return it as a dictionary."""
     if getattr(response, "data", None) is None:
         raise ValueError("Response data is None")

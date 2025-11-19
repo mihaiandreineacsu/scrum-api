@@ -5,6 +5,7 @@ Serializers for Contact APIs
 from typing import TYPE_CHECKING
 
 from rest_framework.serializers import ModelSerializer
+
 from common.serializers_base import ContactModelSerializer
 from core.models import Contact
 

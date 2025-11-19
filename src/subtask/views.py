@@ -31,6 +31,8 @@ class SubtaskViewSet(SubtaskModelViewSet):
         ).order_by("-id")
 
     @override
-    def perform_create(self, serializer: SubtaskBasedSerializer):
+    def perform_create(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self, serializer: SubtaskBasedSerializer
+    ):
         """Create a new subtask."""
         _ = serializer.save(user=self.request.user)

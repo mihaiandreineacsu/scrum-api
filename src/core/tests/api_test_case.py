@@ -1,8 +1,7 @@
 from datetime import date
 from typing import Any, override
 
-from django.db.models import Model
-from django.db.models.manager import BaseManager
+from django.db.models import Model, QuerySet
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.serializers import ModelSerializer
@@ -52,7 +51,7 @@ class PrivateAPITestCase(ScrumAPITestCase):
     api_serializer = type(ModelSerializer[ScrumAPIModel])
     ordering = "-id"
 
-    queryset = BaseManager[ScrumAPIModel]()
+    queryset = QuerySet[ScrumAPIModel]()
 
     VIEW_NAME = ""
 

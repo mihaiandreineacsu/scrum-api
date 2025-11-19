@@ -56,6 +56,8 @@ class ListViewSet(ListOfTasksModelViewSet):
         return Response(ListSerializer(list_of_tasks).data)
 
     @override
-    def perform_create(self, serializer: ListOfTasksBasedSerializer):
+    def perform_create(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self, serializer: ListOfTasksBasedSerializer
+    ):
         """Create a new list."""
         _ = serializer.save(user=self.request.user)

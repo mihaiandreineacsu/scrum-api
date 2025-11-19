@@ -2,16 +2,11 @@
 Serializers for the user API View.
 """
 
-from rest_framework.fields import CharField
-
-
-from rest_framework.fields import EmailField
-
-
 from typing import TYPE_CHECKING, Any, override
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
+from rest_framework.fields import CharField, EmailField
 
 from common.serializers_base import (
     TokenAuthSerializer,

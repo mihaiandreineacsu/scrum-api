@@ -5,7 +5,6 @@ from rest_framework.authtoken.models import Token
 from rest_framework.serializers import BaseSerializer, ModelSerializer, Serializer
 from rest_framework.utils.serializer_helpers import ReturnDict
 
-
 _MT = TypeVar("_MT", bound=models.Model)
 
 
@@ -13,7 +12,8 @@ class AppModelSerializer(ModelSerializer[_MT]):
     if TYPE_CHECKING:
 
         @property
-        def data(self) -> ReturnDict[str, Any]:  # oder Mapping[str, Any]
+        @override
+        def data(self) -> ReturnDict[str, Any]:  # or Mapping[str, Any]
             ...
 
 

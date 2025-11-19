@@ -9,4 +9,4 @@ class UserConfig(AppConfig):
 
     @override
     def ready(self):
-        import user.signals
+        import user.signals  # pyright: ignore[reportUnusedImport]

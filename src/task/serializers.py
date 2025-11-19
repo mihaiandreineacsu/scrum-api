@@ -4,10 +4,11 @@ Serializers for Task APIs
 
 from typing import TYPE_CHECKING, Any, override
 
+from rest_framework.relations import ManyRelatedField, RelatedField
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 
 from category.serializers import CategorySerializer
-from common.serializers_base import ModelSerializerMetaBase, TaskModelSerializer
+from common.serializers_base import TaskModelSerializer
 from contact.serializers import ContactSerializer
 from core.models import Category, Contact, ListOfTasks, Subtask, Task
 from subtask.serializers import SubtaskSerializer
@@ -17,17 +18,23 @@ class TaskSerializer(TaskModelSerializer):
     """Serializer for tasks."""
 
     subtasks = SubtaskSerializer(many=True, required=False)
-    category = PrimaryKeyRelatedField(
-        queryset=Category.objects.all(),
-        required=False,
+    category: RelatedField[Category, Category, Any] | ManyRelatedField = (
+        PrimaryKeyRelatedField(
+            queryset=Category.objects.all(),
+            required=False,
+        )
     )
-    assignees = PrimaryKeyRelatedField(
-        queryset=Contact.objects.all(), many=True, required=False
+    assignees: RelatedField[Contact, Contact, Any] | ManyRelatedField = (
+        PrimaryKeyRelatedField(
+            queryset=Contact.objects.all(), many=True, required=False
+        )
     )
-    list_of_tasks = PrimaryKeyRelatedField(
-        queryset=ListOfTasks.objects.all(),
-        required=False,
-        allow_null=True,
+    list_of_tasks: RelatedField[ListOfTasks, ListOfTasks, Any] | ManyRelatedField = (
+        PrimaryKeyRelatedField(
+            queryset=ListOfTasks.objects.all(),
+            required=False,
+            allow_null=True,
+        )
     )
 
     class Meta:
@@ -84,7 +91,6 @@ class TaskSerializer(TaskModelSerializer):
         representation["assignees"] = ContactSerializer(
             instance.assignees.all(), many=True
         ).data
-        # self.fields["subtasks"] = SubtaskSerializer(read_only=True, many=True)
         return representation
 
     @override

@@ -5,6 +5,7 @@ Serializers for ListOfTasks APIs
 from typing import TYPE_CHECKING
 
 from rest_framework.serializers import ModelSerializer
+
 from common.serializers_base import ListOfTasksModelSerializer
 from core.models import ListOfTasks
 from task.serializers import TaskSerializer
