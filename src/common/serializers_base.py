@@ -1,6 +1,20 @@
-# src/common/serializers_base.py
-from typing import TYPE_CHECKING
-from rest_framework.serializers import BaseSerializer, ModelSerializer
+from typing import TYPE_CHECKING, Any, TypeVar, override
+
+from django.db import models
+from rest_framework.authtoken.models import Token
+from rest_framework.serializers import BaseSerializer, ModelSerializer, Serializer
+from rest_framework.utils.serializer_helpers import ReturnDict
+
+
+_MT = TypeVar("_MT", bound=models.Model)
+
+
+class AppModelSerializer(ModelSerializer[_MT]):
+    if TYPE_CHECKING:
+
+        @property
+        def data(self) -> ReturnDict[str, Any]:  # oder Mapping[str, Any]
+            ...
 
 
 if TYPE_CHECKING:
@@ -8,26 +22,28 @@ if TYPE_CHECKING:
 
     ModelSerializerMetaBase = ModelSerializer.Meta
 
-    BoardModelSerializer = ModelSerializer[Board]
+    BoardModelSerializer = AppModelSerializer[Board]
     BoardBasedSerializer = BaseSerializer[Board]
 
-    CategoryModelSerializer = ModelSerializer[Category]
+    CategoryModelSerializer = AppModelSerializer[Category]
     CategoryBasedSerializer = BaseSerializer[Category]
 
-    ContactModelSerializer = ModelSerializer[Contact]
+    ContactModelSerializer = AppModelSerializer[Contact]
     ContactBasedSerializer = BaseSerializer[Contact]
 
-    ListOfTasksModelSerializer = ModelSerializer[ListOfTasks]
+    ListOfTasksModelSerializer = AppModelSerializer[ListOfTasks]
     ListOfTasksBasedSerializer = BaseSerializer[ListOfTasks]
 
-    SubtaskModelSerializer = ModelSerializer[Subtask]
+    SubtaskModelSerializer = AppModelSerializer[Subtask]
     SubtaskBasedSerializer = BaseSerializer[Subtask]
 
-    TaskModelSerializer = ModelSerializer[Task]
+    TaskModelSerializer = AppModelSerializer[Task]
     TaskBasedSerializer = BaseSerializer[Task]
 
-    UserModelSerializer = ModelSerializer[User]
+    UserModelSerializer = AppModelSerializer[User]
     UserBasedSerializer = BaseSerializer[User]
+
+    TokenAuthSerializer = Serializer[Token]
 else:
 
     class ModelSerializerMetaBase:
@@ -55,3 +71,5 @@ else:
 
     UserModelSerializer = ModelSerializer
     UserBasedSerializer = BaseSerializer
+
+    TokenAuthSerializer = Serializer[Token]

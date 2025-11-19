@@ -2,12 +2,11 @@
 Views for the user API.
 """
 
-from typing import Any, override
+from typing import Any, TypeAlias, override
 
-from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
+from django.contrib.auth.models import AnonymousUser
 from rest_framework import (
     authentication,
-    generics,
     permissions,
     status,
 )
@@ -19,13 +18,17 @@ from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 
-from common.views_base import UserModelViewSet
+from common.views_base import (
+    UserCreateAPIView,
+    UserModelViewSet,
+    UserRetrieveUpdateDestroyAPIView,
+)
 from core.models import User
 from user.permissions import IsNotGuestUser
 from user.serializers import AuthTokenSerializer, UserImageSerializer, UserSerializer
 
 
-class CreateUserView(generics.CreateAPIView):
+class CreateUserView(UserCreateAPIView):
     """Create a new user in the system."""
 
     serializer_class = UserSerializer
@@ -47,7 +50,7 @@ class CreateTokenView(ObtainAuthToken):
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
 
 
-class ManageUserView(generics.RetrieveUpdateAPIView, generics.DestroyAPIView):
+class ManageUserView(UserRetrieveUpdateDestroyAPIView):
     """Manage the authenticated user."""
 
     serializer_class = UserSerializer
@@ -73,7 +76,7 @@ class UserUploadImageView(UserModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsNotGuestUser]
 
     @override
-    def get_object(self) -> AbstractBaseUser:
+    def get_object(self):
         """Retrieve and return the authenticated user."""
         if isinstance(self.request.user, AnonymousUser):
             raise ValueError("Should not happen")

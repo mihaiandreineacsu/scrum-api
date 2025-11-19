@@ -1,11 +1,13 @@
+# pyright: reportUninitializedInstanceVariable=false
+
 """
 Database models.
 """
 
 import os
 import uuid
-from datetime import date, timedelta
-from typing import Any, override
+from datetime import date, datetime, timedelta
+from typing import TYPE_CHECKING, Any, Literal, override
 
 from colorfield.fields import ColorField
 from django.contrib.auth.models import (
@@ -14,6 +16,8 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.db import models
+from django.db.models.constraints import CheckConstraint, UniqueConstraint
+from django.db.models.expressions import Combinable
 from django.utils import timezone
 from ordered_model.models import OrderedModel
 from phonenumber_field.modelfields import PhoneNumberField
@@ -41,7 +45,7 @@ def default_due_date() -> date:
 # TODO: limit the image to size and extension
 # Also when user gets deleted, delete the image
 # Also when user image is updated / cleared, delete the old image
-def user_image_file_path(_: models.Model, filename: str) -> str:
+def user_image_file_path(_: models.Model | None, filename: str) -> str:
     """Generate file path for new user image."""
     ext = os.path.splitext(filename)[1]
     filename = f"{uuid.uuid4()}{ext}"
@@ -51,14 +55,24 @@ def user_image_file_path(_: models.Model, filename: str) -> str:
 class TimeStampedModel(models.Model):
     """Abstract base class that adds created_at and updated_at fields to models."""
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    if TYPE_CHECKING:
+        created_at: models.DateTimeField[datetime, datetime]
+        updated_at: models.DateTimeField[datetime, datetime]
+    else:
+        created_at = models.DateTimeField(auto_now_add=True)
+        updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        abstract = True
+        abstract: bool = True
 
 
-class UserManager(BaseUserManager["User"]):
+if TYPE_CHECKING:
+    UserBasedManager = BaseUserManager["User"]
+else:
+    UserBasedManager = BaseUserManager
+
+
+class CustomUserManager(UserBasedManager):
     """Manager for users."""
 
     def create_user(
@@ -103,7 +117,16 @@ class UserManager(BaseUserManager["User"]):
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     """User in the system."""
 
-    USERNAME_FIELD = "email"
+    if TYPE_CHECKING:
+        email: models.EmailField[str, str]
+        name: models.CharField[str, str]
+        is_active: bool | models.BooleanField[bool | Combinable, bool]
+        is_staff: models.BooleanField[bool, bool]
+        image: models.ImageField
+        is_guest: models.BooleanField[bool, bool]
+        is_superuser: models.BooleanField[bool, bool]
+
+    USERNAME_FIELD: Literal["email"] = "email"
 
     email = models.EmailField(
         unique=True,
@@ -131,10 +154,10 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     is_staff = models.BooleanField(default=False)
     image = models.ImageField(null=True, blank=True, upload_to=user_image_file_path)
     is_guest = models.BooleanField(default=False)
-    objects = UserManager()
+    objects: CustomUserManager = CustomUserManager()
 
     class Meta:
-        constraints = [
+        constraints: list[CheckConstraint] = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
                 condition=(
@@ -155,6 +178,10 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 class Board(TimeStampedModel):
     """Board Object."""
 
+    if TYPE_CHECKING:
+        user: models.ForeignKey[User, User]
+        title: models.CharField[str, str]
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -168,7 +195,7 @@ class Board(TimeStampedModel):
     )
 
     class Meta:
-        constraints = [
+        constraints: list[CheckConstraint] = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_title_check",
                 condition=(
@@ -185,6 +212,10 @@ class Board(TimeStampedModel):
 
 class ListOfTasks(OrderedModel, TimeStampedModel):
     """ListOfTasks Object."""
+
+    if TYPE_CHECKING:
+        name: models.CharField[str, str]
+        board: models.ForeignKey[Board, Board]
 
     @property
     def user(self) -> User:
@@ -207,11 +238,11 @@ class ListOfTasks(OrderedModel, TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="lists_of_tasks",
     )
-    order_with_respect_to = "board"
+    order_with_respect_to: str = "board"
 
     class Meta(OrderedModel.Meta):
-        verbose_name_plural = "ListsOfTasks"
-        constraints = [
+        verbose_name_plural: str = "ListsOfTasks"
+        constraints: list[UniqueConstraint | CheckConstraint] = [
             models.UniqueConstraint(
                 fields=["board", "order"], name="unique_order_per_board"
             ),
@@ -232,6 +263,10 @@ class ListOfTasks(OrderedModel, TimeStampedModel):
 class Category(TimeStampedModel):
     """Category Object"""
 
+    if TYPE_CHECKING:
+        user: models.ForeignKey[User, User]
+        name: models.CharField[str, str]
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -243,11 +278,11 @@ class Category(TimeStampedModel):
             char_length_validator(code="%(app_label)s_%(class)s_name_length_invalid"),
         ],
     )
-    color = ColorField(default="#FFF0000")  # TODO: add color validator
+    color: ColorField = ColorField(default="#FFF0000")  # TODO: add color validator
 
     class Meta:
-        verbose_name_plural = "Categories"
-        constraints = [
+        verbose_name_plural: str = "Categories"
+        constraints: list[UniqueConstraint | CheckConstraint] = [
             models.UniqueConstraint(
                 fields=["user", "name"], name="unique_name_per_user"
             ),
@@ -267,6 +302,11 @@ class Category(TimeStampedModel):
 
 class Contact(TimeStampedModel):
     """Contact object"""
+
+    if TYPE_CHECKING:
+        user: models.ForeignKey[User, User]
+        name: models.CharField[str, str]
+        email: models.EmailField[str, str]
 
     user = models.ForeignKey(
         User,
@@ -290,7 +330,7 @@ class Contact(TimeStampedModel):
     phone_number = PhoneNumberField(blank=True)
 
     class Meta:
-        constraints = [
+        constraints: list[UniqueConstraint | CheckConstraint] = [
             models.UniqueConstraint(
                 fields=["user", "email"],
                 name="%(app_label)s_%(class)s_user_email_unique",
@@ -323,6 +363,15 @@ class Contact(TimeStampedModel):
 
 class Task(OrderedModel, TimeStampedModel):
     """Task object."""
+
+    if TYPE_CHECKING:
+        title: models.CharField[str, str]
+        description: models.TextField[str, str]
+        category: models.ForeignKey[Category, Category]
+        assignees: models.ManyToManyField[Contact, Any]
+        due_date: models.DateField[date, date]
+        priority: models.CharField[str, str]
+        list_of_tasks: models.ForeignKey[ListOfTasks, ListOfTasks]
 
     @property
     def user(self) -> User:
@@ -367,10 +416,10 @@ class Task(OrderedModel, TimeStampedModel):
         related_name="tasks",
     )
 
-    order_with_respect_to = "list_of_tasks"
+    order_with_respect_to: str = "list_of_tasks"
 
     class Meta(OrderedModel.Meta):
-        constraints = [
+        constraints: list[UniqueConstraint | CheckConstraint] = [
             models.UniqueConstraint(
                 fields=["list_of_tasks", "order"], name="unique_order_per_list"
             ),
@@ -407,6 +456,11 @@ class Task(OrderedModel, TimeStampedModel):
 class Subtask(TimeStampedModel):
     """Subtask object."""
 
+    if TYPE_CHECKING:
+        task: models.ForeignKey[Task, Task]
+        title: models.CharField[str, str]
+        done: models.BooleanField[bool, bool]
+
     @property
     def user(self) -> User:
         return self.task.user
@@ -427,7 +481,7 @@ class Subtask(TimeStampedModel):
     done = models.BooleanField(default=False)
 
     class Meta:
-        constraints = [
+        constraints: list[CheckConstraint] = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_title_check",
                 condition=(

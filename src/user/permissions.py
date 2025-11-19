@@ -1,5 +1,6 @@
 from typing import override
 
+from django.contrib.auth.models import AnonymousUser
 from rest_framework import permissions
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -12,6 +13,8 @@ class IsNotGuestUser(permissions.BasePermission):
 
     @override
     def has_permission(self, request: Request, view: APIView):
+        if isinstance(request.user, AnonymousUser):
+            return False
         is_guest: bool = request.user.is_guest
         if request.method in permissions.SAFE_METHODS:
             return True

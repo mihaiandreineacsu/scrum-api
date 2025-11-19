@@ -1,10 +1,10 @@
 import random
 import re
-from typing import cast
 
-from FantasyNameGenerator import Base, DnD, Pathfinder
+from FantasyNameGenerator import DnD, Pathfinder
+from FantasyNameGenerator.Base import Character
 
-PATH_FINDERS: list[type[Base.Character]] = [
+PATH_FINDERS = [
     Pathfinder.Anadi,
     Pathfinder.Android,
     Pathfinder.Automaton,
@@ -51,7 +51,7 @@ PATH_FINDERS: list[type[Base.Character]] = [
     Pathfinder.Vanara,
     Pathfinder.Vishkanya,
 ]
-DNDS: list[type[Base.Character]] = [
+DNDS = [
     DnD.Aarakocra,
     DnD.Aasimer,
     DnD.Bugbear,
@@ -88,7 +88,7 @@ DNDS: list[type[Base.Character]] = [
     DnD.Vedalken,
     DnD.Warforged,
 ]
-OPTIONS: list[type[Base.Character]] = [*PATH_FINDERS, *DNDS]
+OPTIONS: list[type[Character]] = [*PATH_FINDERS, *DNDS]
 
 PRIORITY_CHOICES = [("Urgent", "Urgent"), ("Medium", "Medium"), ("Low", "Low")]
 
@@ -96,7 +96,7 @@ PRIORITY_CHOICES = [("Urgent", "Urgent"), ("Medium", "Medium"), ("Low", "Low")]
 def generate_name() -> str:
     """Random pick a generated FantasyName"""
     option = random.choice(OPTIONS)
-    return cast(str, option.generate())
+    return option.generate()
 
 
 def normalize_spacing(value: str) -> str:

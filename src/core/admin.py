@@ -10,13 +10,13 @@ from ordered_model.admin import (
 )
 
 from common.admins_base import (
-    UserModelAdmin,
     BoardModelAdmin,
     CategoryModelAdmin,
     ContactModelAdmin,
-    TaskModelAdmin,
-    SubtaskModelAdmin,
     ListOfTasksModelAdmin,
+    SubtaskModelAdmin,
+    TaskModelAdmin,
+    UserModelAdmin,
 )
 from core import models
 

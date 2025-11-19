@@ -8,7 +8,6 @@ from django.db.models import Prefetch
 from django.db.models.query import QuerySet
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.serializers import BaseSerializer
 
 from board.serializers import BoardSerializer
 from common.serializers_base import BoardBasedSerializer

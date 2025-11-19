@@ -2,17 +2,20 @@
 Serializers for ListOfTasks APIs
 """
 
-from common.serializers_base import ListOfTasksBasedSerializer, ModelSerializerMetaBase
+from typing import TYPE_CHECKING
+
+from rest_framework.serializers import ModelSerializer
+from common.serializers_base import ListOfTasksModelSerializer
 from core.models import ListOfTasks
 from task.serializers import TaskSerializer
 
 
-class ListSerializer(ListOfTasksBasedSerializer):
+class ListSerializer(ListOfTasksModelSerializer):
     """Serializer for lists."""
 
     tasks = TaskSerializer(many=True, read_only=True)
 
-    class Meta(ModelSerializerMetaBase):
+    class Meta:
         model = ListOfTasks
         fields = [
             "id",
@@ -25,3 +28,6 @@ class ListSerializer(ListOfTasksBasedSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at", "order"]
         write_only_fields = ["board"]
+
+    if TYPE_CHECKING:
+        Meta: type[ModelSerializer.Meta]

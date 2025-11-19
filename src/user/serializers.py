@@ -2,18 +2,28 @@
 Serializers for the user API View.
 """
 
-from typing import Any, override
+from rest_framework.fields import CharField
+
+
+from rest_framework.fields import EmailField
+
+
+from typing import TYPE_CHECKING, Any, override
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-from common.serializers_base import ModelSerializerMetaBase, UserModelSerializer
+
+from common.serializers_base import (
+    TokenAuthSerializer,
+    UserModelSerializer,
+)
 from core.models import User
 
 
 class UserSerializer(UserModelSerializer):
     """Serializer for the user object."""
 
-    class Meta(ModelSerializerMetaBase):
+    class Meta:
         model = User
         fields = [
             "email",
@@ -34,7 +44,7 @@ class UserSerializer(UserModelSerializer):
         return User.objects.create_user(**validated_data)
 
     @override
-    def update(self, instance: User, validated_data: Any) -> User:
+    def update(self, instance: User, validated_data: dict[str, Any]) -> User:
         """Update and return user."""
         password = validated_data.pop("password", None)
         user: User = super().update(instance, validated_data)
@@ -45,12 +55,15 @@ class UserSerializer(UserModelSerializer):
 
         return user
 
+    if TYPE_CHECKING:
+        Meta: type[serializers.ModelSerializer.Meta]
 
-class AuthTokenSerializer(serializers.Serializer):
+
+class AuthTokenSerializer(TokenAuthSerializer):
     """Serializer for the user auth token."""
 
-    email = serializers.EmailField()
-    password = serializers.CharField(
+    email: EmailField = serializers.EmailField()
+    password: CharField = serializers.CharField(
         style={"input_type": "password"},
         trim_whitespace=False,
     )
@@ -77,8 +90,11 @@ class AuthTokenSerializer(serializers.Serializer):
 class UserImageSerializer(UserModelSerializer):
     """Serializer for uploading images to users."""
 
-    class Meta(ModelSerializerMetaBase):
+    class Meta:
         model = User
         fields = ["id", "image"]
         read_only_fields = ["id"]
         extra_kwargs = {"image": {"required": "True"}}
+
+    if TYPE_CHECKING:
+        Meta: type[serializers.ModelSerializer.Meta]

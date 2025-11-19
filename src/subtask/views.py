@@ -7,8 +7,6 @@ from typing import override
 from django.db.models.query import QuerySet
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.serializers import BaseSerializer
-from rest_framework.viewsets import ModelViewSet
 
 from common.serializers_base import SubtaskBasedSerializer
 from common.views_base import SubtaskModelViewSet

@@ -8,7 +8,6 @@ from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.serializers import BaseSerializer
 
 from category.serializers import CategorySerializer
 from common.serializers_base import CategoryBasedSerializer
@@ -27,7 +26,7 @@ class CategoryViewSet(CategoryModelViewSet):
     @override
     def get_queryset(self) -> QuerySet[Category]:
         """Retrieve categories for authenticated user."""
-        # assert self.queryset is not None
+        assert self.queryset is not None
         return self.queryset.filter(user=self.request.user).order_by(Lower("name"))
 
     @override

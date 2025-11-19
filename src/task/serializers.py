@@ -2,11 +2,12 @@
 Serializers for Task APIs
 """
 
-from typing import Any, override
+from typing import TYPE_CHECKING, Any, override
 
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
-from common.serializers_base import ModelSerializerMetaBase, TaskModelSerializer
+
 from category.serializers import CategorySerializer
+from common.serializers_base import ModelSerializerMetaBase, TaskModelSerializer
 from contact.serializers import ContactSerializer
 from core.models import Category, Contact, ListOfTasks, Subtask, Task
 from subtask.serializers import SubtaskSerializer
@@ -29,7 +30,7 @@ class TaskSerializer(TaskModelSerializer):
         allow_null=True,
     )
 
-    class Meta(ModelSerializerMetaBase):
+    class Meta:
         model = Task
         fields = [
             "id",
@@ -92,3 +93,6 @@ class TaskSerializer(TaskModelSerializer):
         internal_value = super().to_internal_value(data)
         internal_value["subtasks"] = subtasks
         return internal_value
+
+    if TYPE_CHECKING:
+        Meta: type[ModelSerializer.Meta]

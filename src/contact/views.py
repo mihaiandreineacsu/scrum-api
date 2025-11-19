@@ -3,6 +3,7 @@ Views for the contact APIs.
 """
 
 from typing import Any, override
+
 from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
 from rest_framework.authentication import TokenAuthentication
