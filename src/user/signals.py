@@ -44,13 +44,9 @@ def password_reset_token_created(
     email_plaintext_message = render_to_string("email/user_reset_password.txt", context)
 
     msg = EmailMultiAlternatives(
-        # title:
-        "Password Reset for {title}".format(title="Join"),
-        # message:
+        "Password Reset for Join",
         email_plaintext_message,
-        # from:
         DEFAULT_FROM_EMAIL,
-        # to:
         [reset_password_token.user.email],
     )
     msg.attach_alternative(email_html_message, "text/html")

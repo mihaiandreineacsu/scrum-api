@@ -1,5 +1,3 @@
-# pyright: reportUninitializedInstanceVariable=false
-
 """
 Database models.
 """
@@ -58,9 +56,9 @@ class TimeStampedModel(models.Model):
     if TYPE_CHECKING:
         created_at: models.DateTimeField[datetime, datetime]
         updated_at: models.DateTimeField[datetime, datetime]
-    else:
-        created_at = models.DateTimeField(auto_now_add=True)
-        updated_at = models.DateTimeField(auto_now=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
@@ -154,7 +152,8 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     is_staff = models.BooleanField(default=False)
     image = models.ImageField(null=True, blank=True, upload_to=user_image_file_path)
     is_guest = models.BooleanField(default=False)
-    objects: CustomUserManager = CustomUserManager()
+    objects: CustomUserManager
+    objects = CustomUserManager()  # pyright: ignore[reportIncompatibleVariableOverride]
 
     class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
         constraints: list[CheckConstraint] = [

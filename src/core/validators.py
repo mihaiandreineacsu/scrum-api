@@ -2,7 +2,6 @@ from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
-from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field import validators as phonenumber_validators
 
@@ -129,22 +128,3 @@ def validate_phonenumber(value: Any):
         phonenumber_validators.validate_international_phonenumber(value)
     except ValidationError:
         phonenumber_validators.validate_phonenumber(value)
-
-
-@deconstructible
-class SameUserAsParentValidator:
-    message = _("Enter a valid value.")
-    code = "invalid"
-    parent_field_name = ""
-    user_field_name = "user"
-
-    def __init__(self, parent_field_name: str, user_field_name: str = "user") -> None:
-
-        self.parent_field_name = parent_field_name
-        self.user_field_name = user_field_name
-
-    def __call__(self, value: Any) -> None:
-        invalid_input = ""
-
-        if invalid_input:
-            raise ValidationError(self.message, code=self.code, params={"value": value})

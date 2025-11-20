@@ -20,8 +20,6 @@ class AppModelSerializer(ModelSerializer[_MT]):
 if TYPE_CHECKING:
     from core.models import Board, Category, Contact, ListOfTasks, Subtask, Task, User
 
-    ModelSerializerMetaBase = ModelSerializer.Meta
-
     BoardModelSerializer = AppModelSerializer[Board]
     BoardBasedSerializer = BaseSerializer[Board]
 
@@ -45,11 +43,6 @@ if TYPE_CHECKING:
 
     TokenAuthSerializer = Serializer[Token]
 else:
-
-    class ModelSerializerMetaBase:
-        """Dummy base class for Django runtime."""
-
-        pass
 
     BoardModelSerializer = ModelSerializer
     BoardBasedSerializer = BaseSerializer
