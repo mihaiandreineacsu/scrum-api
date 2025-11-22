@@ -15,9 +15,10 @@ class IsNotGuestUser(permissions.BasePermission):
 
     @override
     def has_permission(self, request: Request, view: APIView):
-        if isinstance(request.user, AnonymousUser):
-            return False
-        is_guest = cast(User, request.user).is_guest
+        is_guest = (
+            not isinstance(request.user, AnonymousUser)
+            and cast(User, request.user).is_guest
+        )
         if request.method in permissions.SAFE_METHODS:
             return True
 

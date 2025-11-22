@@ -5,19 +5,32 @@ Tests for the user API.
 import os
 import tempfile
 from typing import override
+from unittest.mock import MagicMock, patch
 
-from django.test import TestCase
+from django.core import mail
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from core.models import User
-from core.tests.utils import create_test_user, validate_response_data
+from core.tests.utils import (
+    TEST_OTHER_USER_EMAIL,
+    TEST_OTHER_USER_FULL_NAME,
+    TEST_OTHER_USER_PASSWORD,
+    TEST_USER_EMAIL,
+    TEST_USER_FULL_NAME,
+    TEST_USER_PASSWORD,
+    create_test_user,
+    validate_response_data,
+)
 
 CREATE_USER_URL = reverse("user:create")
+CREATE_GUEST_URL = reverse("user:create-guest")
 TOKEN_URL = reverse("user:token")
 ME_URL = reverse("user:me")
+PASSWORD_RESET_URL = reverse("user:password_reset:reset-password-request")
 
 
 def image_upload_url(_: str | int):
@@ -25,6 +38,7 @@ def image_upload_url(_: str | int):
     return reverse("user:user-upload-image")
 
 
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 class PublicUserApiTests(TestCase):
     """Test the public features of the user API."""
 
@@ -35,9 +49,9 @@ class PublicUserApiTests(TestCase):
     def test_create_user_success(self):
         """Test creating a user is successful."""
         payload = {
-            "email": "johndoe@example.com",
-            "password": "password123",
-            "name": "John Doe",
+            "email": TEST_USER_EMAIL,
+            "password": TEST_USER_PASSWORD,
+            "name": TEST_USER_FULL_NAME,
         }
         res = self.client.post(CREATE_USER_URL, payload)
 
@@ -48,24 +62,37 @@ class PublicUserApiTests(TestCase):
         self.assertTrue(user.check_password(payload["password"]))
         self.assertNotIn("password", data)
 
-    def test_user_with_email_exists_error(self):
+    def test_create_guest_user_success(self):
+        """Test creating a guest user is successful."""
+        res = self.client.post(CREATE_GUEST_URL, {})
+
+        data = validate_response_data(res)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        user = User.objects.filter(email__endswith="@guest.com").first()
+        assert user is not None
+        self.assertTrue(user.is_guest)
+        self.assertNotIn("password", data)
+        self.assertIn("token", data)
+
+    def test_create_user_with_email_exists_error(self):
         """Test error returned if user with email exists."""
         payload = {
-            "email": "johndoe@example.com",
-            "password": "password123",
-            "name": "John Doe",
+            "email": TEST_USER_EMAIL,
+            "password": TEST_USER_PASSWORD,
+            "name": TEST_USER_FULL_NAME,
         }
         _ = create_test_user(**payload)
         res = self.client.post(CREATE_USER_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         # TODO: Add assertion for object not changed
 
-    def test_password_too_short_error(self):
+    def test_create_user_password_too_short_error(self):
         """Test an error is returned if password less than 5 chars."""
         payload = {
-            "email": "johndoe@example.com",
+            "email": TEST_USER_EMAIL,
             "password": "pwd1",
-            "name": "John Doe",
+            "name": TEST_USER_FULL_NAME,
         }
         res = self.client.post(CREATE_USER_URL, payload)
 
@@ -76,9 +103,9 @@ class PublicUserApiTests(TestCase):
     def test_create_token_for_user(self):
         """Test generates token for valid credentials."""
         payload = {
-            "email": "johndoe@example.com",
-            "password": "test-user-password123",
-            "name": "John Doe",
+            "email": TEST_USER_EMAIL,
+            "password": TEST_USER_PASSWORD,
+            "name": TEST_USER_FULL_NAME,
         }
         _ = create_test_user(**payload)
 
@@ -89,17 +116,20 @@ class PublicUserApiTests(TestCase):
         self.assertIn("token", data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_create_token_bad_credentials(self):
+    def test_create_token_bad_password(self):
         """Test returns error if credentials invalid."""
-        _ = create_test_user(password="goodpass")
+        _ = create_test_user()
 
-        payload = {"email": "johndoe@example", "password": "badpass"}
+        payload = {"email": TEST_USER_EMAIL, "password": "badpass"}
         res = self.client.post(TOKEN_URL, payload)
 
         data = validate_response_data(res)
 
         self.assertNotIn("token", data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            data["detail"], ["Unable to authenticate with provided credentials."]
+        )
 
     def test_create_token_blank_password(self):
         """Test posting a blank password returns an error."""
@@ -116,6 +146,16 @@ class PublicUserApiTests(TestCase):
         res = self.client.get(ME_URL)
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_password_reset_api_triggers_email(self):
+        """Test that the password reset API triggers an email."""
+        user = create_test_user()
+        response = self.client.post(PASSWORD_RESET_URL, {"email": user.email})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertIn("Password Reset for Join", email.subject)
+        self.assertIn(user.email, email.to)
 
 
 class PrivateUserApiTests(TestCase):
@@ -146,15 +186,32 @@ class PrivateUserApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_update_user_profile(self):
+    def test_update_user_profile_with_password(self):
         """Test updating the user profile for the authenticated user."""
-        payload = {"name": "John Wick", "password": "newpassword123"}
+        payload = {
+            "email": TEST_OTHER_USER_EMAIL,
+            "name": TEST_OTHER_USER_FULL_NAME,
+            "password": TEST_OTHER_USER_PASSWORD,
+        }
 
         res = self.client.patch(ME_URL, payload)
 
         self.user.refresh_from_db()
         self.assertEqual(self.user.name, payload["name"])
         self.assertTrue(self.user.check_password(payload["password"]))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_update_user_profile_without_password(self):
+        """Test updating the user profile for the authenticated user."""
+        payload = {
+            "email": TEST_OTHER_USER_EMAIL,
+            "name": TEST_OTHER_USER_FULL_NAME,
+        }
+
+        res = self.client.patch(ME_URL, payload)
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.name, payload["name"])
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_delete_user_profile(self):

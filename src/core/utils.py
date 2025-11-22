@@ -1,5 +1,4 @@
 import random
-import re
 
 from FantasyNameGenerator import DnD, Pathfinder
 from FantasyNameGenerator.Base import Character
@@ -97,13 +96,3 @@ def generate_name() -> str:
     """Random pick a generated FantasyName"""
     option = random.choice(OPTIONS)
     return option.generate()
-
-
-def normalize_spacing(value: str) -> str:
-    """Normalize string by stripping and reducing spaces."""
-    return re.sub(r"\s+", " ", value.strip())
-
-
-def remove_spacing(value: str) -> str:
-    """Normalize string by removing spaces."""
-    return re.sub(r"\s+", "", value.strip())

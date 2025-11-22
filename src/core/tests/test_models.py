@@ -9,6 +9,7 @@ from django.test import TestCase
 
 from core import models
 from core.tests.utils import (
+    TEST_CONTACT_EMAIL,
     create_test_board,
     create_test_category,
     create_test_contact,
@@ -91,12 +92,12 @@ class ModelTests(TestCase):
 
         self.assertEqual(str(list_of_tasks), list_of_tasks.name)
 
-    def test_create_contact_with_email_successful(self):
-        """Test creating a contact with an email is successful."""
-        email = "test@example.com"
-        contact = create_test_contact(email=email)
+    def test_create_contact_successful(self):
+        """Test creating a contact is successful."""
+        contact = create_test_contact()
 
-        self.assertEqual(contact.email, email)
+        self.assertEqual(contact.email, TEST_CONTACT_EMAIL)
+        self.assertEqual(str(contact), f"{contact.name} - {contact.pk}")
 
     def test_create_category(self):
         """Test creating a category is successful"""

@@ -37,8 +37,6 @@ def password_reset_token_created(
         "reset_password_url": f"{instance.request.META.get('HTTP_ORIGIN')}/auth/reset-password?token={reset_password_token.key}",
     }
 
-    # print(f"request origin: {instance.request.META.get('HTTP_ORIGIN')}")
-
     # render email text
     email_html_message = render_to_string("email/user_reset_password.html", context)
     email_plaintext_message = render_to_string("email/user_reset_password.txt", context)
@@ -50,4 +48,5 @@ def password_reset_token_created(
         [reset_password_token.user.email],
     )
     msg.attach_alternative(email_html_message, "text/html")
+    # TODO: add logging, set fail_silently=False try except that will raise OSError/smtplib.SMTPException
     _ = msg.send(fail_silently=True)
