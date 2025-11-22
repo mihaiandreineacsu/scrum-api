@@ -354,6 +354,14 @@ class Contact(TimeStampedModel):
                     & ~models.Q(name__regex=SPACING_REGEX)
                 ),
             ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(email__gt="")
+                    | models.Q(name__gt="")
+                    | models.Q(phone_number__gt="")
+                ),
+                name="%(app_label)s_%(class)s_at_least_one_contact_info",
+            ),
             # TODO add phone number check
         ]
 

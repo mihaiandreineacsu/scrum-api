@@ -167,25 +167,6 @@ omit = [
 fail_under = 80
 show_missing = true
 skip_covered = true
-# Regexes for lines to exclude from consideration
-# exclude_also = [
-#     # Don't complain about missing debug-only code:
-#     "def __repr__",
-#     "if self\\.debug",
-
-#     # Don't complain if tests don't hit defensive assertion code:
-#     "raise AssertionError",
-#     "raise NotImplementedError",
-
-#     # Don't complain if non-runnable code isn't run:
-#     "if 0:",
-#     "if __name__ == .__main__.:",
-
-#     # Don't complain about abstract methods, they aren't run:
-#     "@(abc\\.)?abstractmethod",
-#     ]
-
-# ignore_errors = true
 
 [tool.coverage.html]
 directory = "coverage_html_report"
@@ -194,4 +175,4 @@ directory = "coverage_html_report"
 DJANGO_SETTINGS_MODULE = "app.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = "--ds=app.settings --reuse-db --nomigrations --cov=src --cov-report=term-missing --cov-report=html"
-python_paths = "src"
+# python_paths = "src"

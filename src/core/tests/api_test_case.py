@@ -171,3 +171,11 @@ class PrivateAPITestCase(ScrumAPITestCase):
         url = self.api_url("detail", [model_pk])
         res = self.client.get(url)
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    # TODO: also for update and partial_update
+    def assert_constraint_violation(self, payload: dict[str, Any]):
+        url = self.api_url("list", [])
+        res = self.client.post(url, payload, format="json")
+        data = validate_response_data(res)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertRegex(data["detail"], r"A database constraint was violated")

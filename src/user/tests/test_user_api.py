@@ -157,6 +157,15 @@ class PrivateUserApiTests(TestCase):
         self.assertTrue(self.user.check_password(payload["password"]))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
+    def test_delete_user_profile(self):
+        """Test deleting the user profile for the authenticated user."""
+
+        res = self.client.delete(ME_URL)
+
+        with self.assertRaises(User.DoesNotExist):
+            self.user.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
 
 class ImageUploadTests(TestCase):
     """Tests for the image upload API."""

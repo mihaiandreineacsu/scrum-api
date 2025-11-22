@@ -123,3 +123,18 @@ class PrivateContactAPITests(PrivateAPITestCase):
     def test_retrieve_other_user_contact_error(self):
         """Test trying to retrieve another users contact gives error."""
         self.assert_retrieve_other_user_model_error(self.other_user_contact.pk)
+
+    def test_validate_contact(self):
+        """Test validating contact with all fields empty."""
+        invalid_contact = {"email": "", "name": "", "phone_number": ""}
+        self.assert_constraint_violation(invalid_contact)
+
+    def test_unique_contact_email_per_user(self):
+        """Test validating contact with duplicate email."""
+        invalid_contact = {"email": self.user_contact.email}
+        self.assert_constraint_violation(invalid_contact)
+
+    def test_unique_contact_phone_number_per_user(self):
+        """Test validating contact with duplicate email."""
+        invalid_contact = {"phone_number": str(self.user_contact.phone_number)}
+        self.assert_constraint_violation(invalid_contact)

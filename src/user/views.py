@@ -2,7 +2,7 @@
 Views for the user API.
 """
 
-from typing import Any, override
+from typing import Any, cast, override
 
 from rest_framework import (
     authentication,
@@ -59,11 +59,9 @@ class ManageUserView(UserRetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated, IsNotGuestUser]
 
     @override
-    def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Handle user deletion."""
-        user = self.request.user
-        _ = user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_object(self):
+        """Retrieve and return the authenticated user."""
+        return cast(User, self.request.user)
 
 
 class UserUploadImageView(UserModelViewSet):

@@ -171,6 +171,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         # other authentication classes as needed
     ],
+    "EXCEPTION_HANDLER": "common.exceptions.drf_exception_handler",
 }
 
 SPECTACULAR_SETTINGS = {
