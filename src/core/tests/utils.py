@@ -42,7 +42,7 @@ def create_test_superuser(
     return User.objects.create_superuser(email=email, password=password, **params)
 
 
-def create_test_guestuser(**params: Any) -> User:
+def create_test_guest_user(**params: Any) -> User:
     return User.objects.create_guest_user(**params)
 
 

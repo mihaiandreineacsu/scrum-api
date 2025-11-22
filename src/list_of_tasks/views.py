@@ -43,15 +43,17 @@ class ListViewSet(ListOfTasksModelViewSet):
     def move(self, request: Request, pk: Any = None):
         list_of_tasks = self.get_object()
         order = request.data.get("order") or ""
-        assert str(order).isdigit(), "Order must be an integer"
-
+        # assert str(order).isdigit(), "Order must be an integer"
         try:
             order = int(order)
         except (TypeError, ValueError):
-            return Response({"error": "Invalid order"})
+            return Response({"detail": "Invalid order"}, 400)
 
-        list_of_tasks.to(order)
-        list_of_tasks.save()
+        replacement = ListOfTasks.objects.filter(order=order).first()
+        if replacement:
+            list_of_tasks.swap(replacement=replacement)
+        else:
+            list_of_tasks.to(order)
 
         return Response(ListSerializer(list_of_tasks).data)
 

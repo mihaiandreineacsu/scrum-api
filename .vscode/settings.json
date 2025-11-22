@@ -1,4 +1,5 @@
 {
+    "basedpyright.analysis.configFilePath": "${workspaceFolder}/pyproject.toml",
     "black-formatter.args": [
         "--config=pyproject.toml"
     ],

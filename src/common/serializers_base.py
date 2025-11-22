@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any, TypeVar, override
 
 from django.db import models
+from ordered_model.serializers import OrderedModelSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.serializers import BaseSerializer, ModelSerializer, Serializer
 from rest_framework.utils.serializer_helpers import ReturnDict
@@ -53,7 +54,7 @@ else:
     ContactModelSerializer = ModelSerializer
     ContactBasedSerializer = BaseSerializer
 
-    ListOfTasksModelSerializer = ModelSerializer
+    ListOfTasksModelSerializer = OrderedModelSerializer
     ListOfTasksBasedSerializer = BaseSerializer
 
     SubtaskModelSerializer = ModelSerializer

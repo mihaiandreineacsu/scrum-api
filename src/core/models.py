@@ -244,9 +244,6 @@ class ListOfTasks(OrderedModel, TimeStampedModel):
     ):
         verbose_name_plural: str = "ListsOfTasks"
         constraints: list[UniqueConstraint | CheckConstraint] = [
-            models.UniqueConstraint(
-                fields=["board", "order"], name="unique_order_per_board"
-            ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_check",
                 condition=(

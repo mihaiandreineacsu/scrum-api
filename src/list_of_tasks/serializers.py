@@ -27,8 +27,8 @@ class ListSerializer(ListOfTasksModelSerializer):
             "tasks",
             "order",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "order"]
-        write_only_fields = ["board"]
+        read_only_fields = ["id", "created_at", "updated_at"]
+        write_only_fields = ["board", "order"]
 
     if TYPE_CHECKING:
         Meta: type[ModelSerializer.Meta]

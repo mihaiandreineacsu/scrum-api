@@ -5,7 +5,6 @@ Tests for the user API.
 import os
 import tempfile
 from typing import override
-from unittest.mock import MagicMock, patch
 
 from django.core import mail
 from django.test import TestCase, override_settings
@@ -22,6 +21,7 @@ from core.tests.utils import (
     TEST_USER_EMAIL,
     TEST_USER_FULL_NAME,
     TEST_USER_PASSWORD,
+    create_test_guest_user,
     create_test_user,
     validate_response_data,
 )
@@ -38,7 +38,6 @@ def image_upload_url(_: str | int):
     return reverse("user:user-upload-image")
 
 
-@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 class PublicUserApiTests(TestCase):
     """Test the public features of the user API."""
 
@@ -147,6 +146,7 @@ class PublicUserApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_password_reset_api_triggers_email(self):
         """Test that the password reset API triggers an email."""
         user = create_test_user()
@@ -154,7 +154,7 @@ class PublicUserApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
-        self.assertIn("Password Reset for Join", email.subject)
+        self.assertIn("Password Reset for Join", str(email.subject))
         self.assertIn(user.email, email.to)
 
 
@@ -162,10 +162,12 @@ class PrivateUserApiTests(TestCase):
     """Test API request that require authentication."""
 
     user = User()
+    guest_user = User()
 
     @override
     def setUp(self):
         self.user = create_test_user()
+        self.guest_user = create_test_guest_user()
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
@@ -216,11 +218,12 @@ class PrivateUserApiTests(TestCase):
 
     def test_delete_user_profile(self):
         """Test deleting the user profile for the authenticated user."""
-
-        res = self.client.delete(ME_URL)
+        guest_client = APIClient()
+        guest_client.force_authenticate(self.guest_user)
+        res = guest_client.delete(ME_URL)
 
         with self.assertRaises(User.DoesNotExist):
-            self.user.refresh_from_db()
+            self.guest_user.refresh_from_db()
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
 
@@ -234,7 +237,6 @@ class ImageUploadTests(TestCase):
         self.client = APIClient()
         self.user = create_test_user()
         self.client.force_authenticate(self.user)
-        # self.user = create_user(user=self.user)
 
     @override
     def tearDown(self):

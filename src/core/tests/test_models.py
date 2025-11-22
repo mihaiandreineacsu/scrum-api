@@ -13,7 +13,7 @@ from core.tests.utils import (
     create_test_board,
     create_test_category,
     create_test_contact,
-    create_test_guestuser,
+    create_test_guest_user,
     create_test_list_of_tasks,
     create_test_subtask,
     create_test_superuser,
@@ -63,7 +63,7 @@ class ModelTests(TestCase):
 
     def test_create_guestuser(self):
         """Test creating a guest."""
-        user = create_test_guestuser()
+        user = create_test_guest_user()
 
         self.assertTrue(user.is_guest)
         self.assertFalse(user.is_superuser)
