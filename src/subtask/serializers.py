@@ -18,7 +18,7 @@ class SubtaskSerializer(SubtaskModelSerializer):
         queryset=Task.objects.all()
     )
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportRedeclaration]
         model = Subtask
         fields = ["id", "title", "done", "task", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]

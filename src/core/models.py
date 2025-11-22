@@ -209,9 +209,7 @@ class Board(TimeStampedModel):
         return f"{self.title}"
 
 
-class ListOfTasks(  # pyright: ignore[reportUnsafeMultipleInheritance]
-    OrderedModel, TimeStampedModel
-):
+class ListOfTasks(OrderedModel, TimeStampedModel):
     """ListOfTasks Object."""
 
     if TYPE_CHECKING:
@@ -364,9 +362,7 @@ class Contact(TimeStampedModel):
         return f"{self.name or self.email or self.phone_number} - {self.pk}"
 
 
-class Task(  # pyright: ignore[reportUnsafeMultipleInheritance]
-    OrderedModel, TimeStampedModel
-):
+class Task(OrderedModel, TimeStampedModel):
     """Task object."""
 
     if TYPE_CHECKING:

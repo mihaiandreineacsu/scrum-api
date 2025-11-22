@@ -16,7 +16,7 @@ class ListSerializer(ListOfTasksModelSerializer):
 
     tasks = TaskSerializer(many=True, read_only=True)
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportRedeclaration]
         model = ListOfTasks
         fields = [
             "id",

@@ -16,7 +16,7 @@ class BoardSerializer(BoardModelSerializer):
 
     lists_of_tasks: ListSerializer = ListSerializer(many=True, read_only=True)
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportRedeclaration]
         model = Board
         fields = [
             "id",

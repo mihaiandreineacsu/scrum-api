@@ -13,7 +13,7 @@ from core.models import Contact
 class ContactSerializer(ContactModelSerializer):
     """Serializer for contacts."""
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportRedeclaration]
         model = Contact
         fields = ["id", "email", "name", "phone_number", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]

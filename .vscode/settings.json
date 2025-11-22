@@ -15,7 +15,6 @@
     "python-envs.pythonProjects": [],
     "python.analysis.typeCheckingMode": "off",
     "python.envFile": "${workspaceFolder}/.env",
-    "python.languageServer": "None",
     "python.terminal.activateEnvInCurrentTerminal": true,
     "python.testing.pytestArgs": [
         "src"

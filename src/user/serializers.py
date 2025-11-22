@@ -18,7 +18,7 @@ from core.models import User
 class UserSerializer(UserModelSerializer):
     """Serializer for the user object."""
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportRedeclaration]
         model = User
         fields = [
             "email",
@@ -85,7 +85,7 @@ class AuthTokenSerializer(TokenAuthSerializer):
 class UserImageSerializer(UserModelSerializer):
     """Serializer for uploading images to users."""
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportRedeclaration]
         model = User
         fields = ["id", "image"]
         read_only_fields = ["id"]

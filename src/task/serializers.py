@@ -37,7 +37,7 @@ class TaskSerializer(TaskModelSerializer):
         )
     )
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportRedeclaration]
         model = Task
         fields = [
             "id",

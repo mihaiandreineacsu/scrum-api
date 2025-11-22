@@ -13,7 +13,7 @@ from core.models import Category
 class CategorySerializer(CategoryModelSerializer):
     """Serializer for categories."""
 
-    class Meta:
+    class Meta:  # pyright: ignore[reportRedeclaration]
         model = Category
         fields = ["id", "name", "color", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]

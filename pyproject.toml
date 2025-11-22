@@ -9,6 +9,7 @@ exclude = [
 ]
 extraPaths = ["src"]
 useLibraryCodeForTypes = true
+typeCheckingMode = "strict"
 
 # Type checking settings
 reportMissingImports = "error"
@@ -25,10 +26,7 @@ reportUntypedBaseClass = "error"
 reportUntypedNamedTuple = "error"
 reportUntypedFunctionDecorator = "error"
 reportUntypedClassDecorator = "error"
-
-# Report settings
 reportReturnType = "error"
-# reportFunctionReturnType = "error"
 reportAssignmentType = "error"
 reportArgumentType = "error"
 reportAttributeAccessIssue = "error"
@@ -54,12 +52,9 @@ reportInvalidTypeVarUse = "error"
 reportInvalidStubStatement = "error"
 reportIncompleteStub = "error"
 reportConstantRedefinition = "error"
-
-# Additional strictness settings
 reportPrivateUsage = "error"
 reportPrivateImportUsage = "error"
 reportDuplicateImport = "error"
-# reportShadowedImports = "error"
 reportUnusedImport = "error"
 reportUnusedFunction = "error"
 reportUnusedClass = "error"
@@ -91,6 +86,21 @@ reportInconsistentConstructor = "error"
 reportMissingSuperCall = "error"
 reportUninitializedInstanceVariable = "error"
 reportUnreachable = "error"
+reportRedeclaration = "error"
+reportTypeCommentUsage = "error"
+reportCallInDefaultInitializer = "error"
+reportImplicitStringConcatenation  = "error"
+reportUndefinedVariable = "error"
+reportUnsupportedDunderAll  = "error"
+reportUnusedCoroutine = "error"
+reportAny = "warning"
+reportIgnoreCommentWithoutRule = "error"
+reportPrivateLocalImportUsage = "error"
+reportImplicitRelativeImport = "error"
+reportInvalidCast = "error"
+reportUnusedParameter = "warning"
+reportImplicitAbstractClass = "error"
+reportUnannotatedClassAttribute = "warning"
 
 enableTypeIgnoreComments = true
 enableReachabilityAnalysis = true
@@ -103,6 +113,7 @@ defineConstant = { DEBUG = true }
 analyzeUnannotatedFunctions = true
 disableBytesTypePromotions = true
 strictParameterNoneValue = true
+failOnWarnings = true
 
 [tool.black]
 line-length = 88
@@ -140,27 +151,41 @@ skip_glob = ["*.venv/*"]
 
 [tool.coverage.run]
 branch = true
+source = ["src"]
+omit = [
+    "typings/*",
+    "**/tests/*",
+    "*/migrations/*",
+    "*/__init__.py",
+    "*/settings/*",
+    "*/wsgi.py",
+    "*/asgi.py",
+    "manage.py"
+]
 
 [tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
 # Regexes for lines to exclude from consideration
-exclude_also = [
-    # Don't complain about missing debug-only code:
-    "def __repr__",
-    "if self\\.debug",
+# exclude_also = [
+#     # Don't complain about missing debug-only code:
+#     "def __repr__",
+#     "if self\\.debug",
 
-    # Don't complain if tests don't hit defensive assertion code:
-    "raise AssertionError",
-    "raise NotImplementedError",
+#     # Don't complain if tests don't hit defensive assertion code:
+#     "raise AssertionError",
+#     "raise NotImplementedError",
 
-    # Don't complain if non-runnable code isn't run:
-    "if 0:",
-    "if __name__ == .__main__.:",
+#     # Don't complain if non-runnable code isn't run:
+#     "if 0:",
+#     "if __name__ == .__main__.:",
 
-    # Don't complain about abstract methods, they aren't run:
-    "@(abc\\.)?abstractmethod",
-    ]
+#     # Don't complain about abstract methods, they aren't run:
+#     "@(abc\\.)?abstractmethod",
+#     ]
 
-ignore_errors = true
+# ignore_errors = true
 
 [tool.coverage.html]
 directory = "coverage_html_report"
@@ -168,5 +193,5 @@ directory = "coverage_html_report"
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "app.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-# addopts = "--cov=src --cov-report=term-missing --cov-report=html:coverage_html_report"
+addopts = "--ds=app.settings --reuse-db --nomigrations --cov=src --cov-report=term-missing --cov-report=html"
 python_paths = "src"
