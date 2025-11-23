@@ -62,6 +62,7 @@ def create_test_list_of_tasks(
     user: User | None = None,
     board: Board | None = None,
     name: str = "TODO",
+    order: int = 0,
     **params: Any,
 ) -> ListOfTasks:
     if user and board:
@@ -72,7 +73,7 @@ def create_test_list_of_tasks(
     if not board:
         board = create_test_board(user)
 
-    return ListOfTasks.objects.create(name=name, board=board, **params)
+    return ListOfTasks.objects.create(name=name, board=board, order=order, **params)
 
 
 def create_test_contact(
@@ -107,7 +108,7 @@ def create_test_task(
     title: str = "Fix broken pipe",
     description: str = "",
     priority: str = "Urgent",
-    order: int = 0,  # TODO: ??? what is this filed for
+    order: int = 0,
     **params: Any,
 ) -> Task:
     if user and list_of_tasks:
@@ -135,7 +136,7 @@ def create_test_task(
         title=title,
         description=description,
         priority=priority,
-        order=order,  # TODO: ??? what is this filed for
+        order=order,
         **params,
     )
 

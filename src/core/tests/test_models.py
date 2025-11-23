@@ -69,8 +69,6 @@ class ModelTests(TestCase):
         self.assertFalse(user.is_superuser)
         self.assertFalse(user.is_staff)
 
-    # TODO: test guest user
-
     @patch("core.models.uuid.uuid4")
     def test_user_file_name_uuid(self, mock_uuid: MagicMock):
         """Test generating image path."""

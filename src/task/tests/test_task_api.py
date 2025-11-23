@@ -94,6 +94,7 @@ class PrivateTaskAPITests(PrivateAPITestCase):
             "subtasks": [{"title": "Write unit test", "done": False}],
             "list_of_tasks": self.user_list_of_tasks.pk,
             "user": self.other_user.pk,
+            "order": 1,
         }
         self.assert_create_model(payload)
 
@@ -134,6 +135,10 @@ class PrivateTaskAPITests(PrivateAPITestCase):
                 ).pk,
                 "user": self.other_user.pk,
             },
+            {"order": 1},
+            {
+                "user": self.other_user.pk,
+            },
         ]
 
         for update in updates:
@@ -159,6 +164,7 @@ class PrivateTaskAPITests(PrivateAPITestCase):
                 self.user, None, "IN PROGRESS"
             ).pk,
             "user": self.other_user.pk,
+            "order": 1,
         }
         self.assert_update_model(payload, self.user_task)
 
@@ -191,6 +197,7 @@ class PrivateTaskAPITests(PrivateAPITestCase):
                 self.user, None, "IN PROGRESS"
             ).pk,
             "user": self.user.pk,
+            "order": 1,
         }
         self.assert_updating_other_user_model_error(payload, self.other_user_task)
 
@@ -223,6 +230,7 @@ class PrivateTaskAPITests(PrivateAPITestCase):
                 ).pk,
                 "user": self.user.pk,
             },
+            {"order": 1},
         ]
 
         for update in updates:

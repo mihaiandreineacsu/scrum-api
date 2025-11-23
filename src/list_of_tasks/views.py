@@ -2,15 +2,12 @@
 Views for the list APIs.
 """
 
-from typing import Any, override
+from typing import override
 
 from django.db.models import Prefetch
 from django.db.models.query import QuerySet
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.request import Request
-from rest_framework.response import Response
 
 from common.serializers_base import ListOfTasksBasedSerializer
 from common.views_base import ListOfTasksModelViewSet
@@ -38,24 +35,6 @@ class ListViewSet(ListOfTasksModelViewSet):
             )
             .order_by("-id")
         )
-
-    @action(detail=True, methods=["post"])
-    def move(self, request: Request, pk: Any = None):
-        list_of_tasks = self.get_object()
-        order = request.data.get("order") or ""
-        # assert str(order).isdigit(), "Order must be an integer"
-        try:
-            order = int(order)
-        except (TypeError, ValueError):
-            return Response({"detail": "Invalid order"}, 400)
-
-        replacement = ListOfTasks.objects.filter(order=order).first()
-        if replacement:
-            list_of_tasks.swap(replacement=replacement)
-        else:
-            list_of_tasks.to(order)
-
-        return Response(ListSerializer(list_of_tasks).data)
 
     @override
     def perform_create(  # pyright: ignore[reportIncompatibleMethodOverride]

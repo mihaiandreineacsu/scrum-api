@@ -37,6 +37,7 @@ class UserAdmin(UserModelAdmin):
                     "is_active",
                     "is_staff",
                     "is_superuser",
+                    "is_guest",
                 )
             },
         ),
@@ -57,6 +58,7 @@ class UserAdmin(UserModelAdmin):
                     "is_active",
                     "is_staff",
                     "is_superuser",
+                    "is_guest",
                 ),
             },
         ),
@@ -86,7 +88,7 @@ class BoardAdmin(
     inlines = (BoardListsOfTasksInLine,)
 
 
-class ListsOfTaskTasksInline(OrderedStackedInline):
+class TaskInline(OrderedStackedInline):
     model = models.Task
     fields = (
         "title",
@@ -117,7 +119,7 @@ class ListAdmin(
     list_filter = ["created_at", "updated_at"]
     search_fields = ["name", "user"]
     readonly_fields = ["order"]
-    inlines = (ListsOfTaskTasksInline,)
+    inlines = (TaskInline,)
 
 
 @admin.register(models.Category)

@@ -60,7 +60,7 @@ else:
     SubtaskModelSerializer = ModelSerializer
     SubtaskBasedSerializer = BaseSerializer
 
-    TaskModelSerializer = ModelSerializer
+    TaskModelSerializer = OrderedModelSerializer
     TaskBasedSerializer = BaseSerializer
 
     UserModelSerializer = ModelSerializer

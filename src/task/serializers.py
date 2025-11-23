@@ -5,7 +5,11 @@ Serializers for Task APIs
 from typing import TYPE_CHECKING, Any, override
 
 from rest_framework.relations import ManyRelatedField, RelatedField
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
+from rest_framework.serializers import (
+    IntegerField,
+    ModelSerializer,
+    PrimaryKeyRelatedField,
+)
 
 from category.serializers import CategorySerializer
 from common.serializers_base import TaskModelSerializer
@@ -17,7 +21,7 @@ from subtask.serializers import SubtaskSerializer
 class TaskSerializer(TaskModelSerializer):
     """Serializer for tasks."""
 
-    subtasks = SubtaskSerializer(many=True, required=False)
+    subtasks: SubtaskSerializer = SubtaskSerializer(many=True, required=False)
     category: RelatedField[Category, Category, Any] | ManyRelatedField = (
         PrimaryKeyRelatedField(
             queryset=Category.objects.all(),
@@ -36,6 +40,7 @@ class TaskSerializer(TaskModelSerializer):
             allow_null=True,
         )
     )
+    order: IntegerField = IntegerField(required=False, allow_null=True)
 
     class Meta:  # pyright: ignore[reportRedeclaration]
         model = Task
@@ -52,18 +57,15 @@ class TaskSerializer(TaskModelSerializer):
             "updated_at",
             "list_of_tasks",
             "order",
-            "order",
         ]
         read_only_fields = [
             "id",
             "created_at",
             "updated_at",
         ]
-        ordering = ["order"]
 
     @override
     def create(self, validated_data: dict[str, Any]) -> Task:
-        """TODO: remove order logic from api, forward on model"""
         subtasks_data = validated_data.pop("subtasks", [])
 
         task = super().create(validated_data)
@@ -83,7 +85,6 @@ class TaskSerializer(TaskModelSerializer):
 
     @override
     def to_representation(self, instance: Task) -> dict[str, Any]:
-        """TODO: use subtask serializer"""
         representation = super().to_representation(instance)
         representation["category"] = (
             CategorySerializer(instance.category).data if instance.category else None
@@ -96,8 +97,10 @@ class TaskSerializer(TaskModelSerializer):
     @override
     def to_internal_value(self, data: dict[str, Any]) -> Task:
         subtasks = data.pop("subtasks", [])
+        order = data.pop("order", None)
         internal_value = super().to_internal_value(data)
         internal_value["subtasks"] = subtasks
+        internal_value["order"] = order
         return internal_value
 
     if TYPE_CHECKING:
